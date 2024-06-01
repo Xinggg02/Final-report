@@ -19,12 +19,26 @@ html_temp = """
 		"""
 stc.html(html_temp)
 
-## 股票選擇
-stocks = {"(1215)2023_2024_tsmc.xlsx", "(1215)2023_2024_foxconn.xlsx"}  # 添加不同股票的檔案
-selected_stock = st.selectbox(list(stocks.keys()))
+# 定义一个函数来获取股票代码和名称
+@st.cache
+def load_stock_data(stock_ids):
+    stock_dict = {}
+    for stock_id in stock_ids:
+        stock = twstock.Stock(stock_id)
+        real = twstock.realtime.get(stock_id)
+        name = real['info']['name'] if real['success'] else stock_id
+        stock_dict[name] = f"({stock_id})2023_2024_{name}.xlsx"
+    return stock_dict
+
+# 股票代碼列表
+stock_ids = ['0050', '00878']
+stock_dict = load_stock_data(stock_ids)
+
+# 生成股票选择列表
+selected_stock = st.selectbox("選擇股票", list(stock_dict.keys()))
 
 ## 读取选定股票的Excel文件
-df_original = pd.read_excel(stocks[selected_stock])
+df_original = pd.read_excel(stock_dict[selected_stock])
 
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
