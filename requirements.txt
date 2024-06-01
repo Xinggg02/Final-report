@@ -11,3 +11,5 @@ mplfinance
 shioaji
 pynacl
 twstock
+lxml
+pandas
