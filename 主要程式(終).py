@@ -20,8 +20,8 @@ html_temp = """
 stc.html(html_temp)
 
 ## 股票選擇
-stocks = {"(00878)2023_2024.xlsx", "(0050)2023_2024.xlsx"}  # 添加不同股票的檔案
-selected_stock = st.selectbox("選擇股票", list(stocks.keys()))
+stocks = {"(1215)2023_2024_tsmc.xlsx", "(1215)2023_2024_foxconn.xlsx"}  # 添加不同股票的檔案
+selected_stock = st.selectbox(list(stocks.keys()))
 
 ## 读取选定股票的Excel文件
 df_original = pd.read_excel(stocks[selected_stock])
@@ -175,4 +175,3 @@ with st.expander("K線圖, 長短 RSI"):
 
     fig2.layout.yaxis2.showgrid = True
     st.plotly_chart(fig2, use_container_width=True)
-
