@@ -43,7 +43,7 @@ selected_stock = st.selectbox("選擇股票", list(stock_dict.keys()))
 
 if selected_stock in stock_dict:
     try:
-        st.write(f"Selected file: {stock_dict[selected_stock]}")
+        ##st.write(f"Selected file: {stock_dict[selected_stock]}")
 
         df_original = pd.read_excel(stock_dict[selected_stock])
         df_original = df_original.drop('Unnamed: 0', axis=1)
