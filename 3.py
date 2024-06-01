@@ -17,7 +17,7 @@ html_temp = """
 stc.html(html_temp)
 
 ## 读取Pickle文件
-df_original = pd.read_pickle('(1215)2023_2024.xlsx')
+df_original = pd.read_excel('(1215)2023_2024.xlsx')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
 ##### 選擇資料區間
