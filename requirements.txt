@@ -10,3 +10,4 @@ plotly
 mplfinance
 shioaji
 pynacl
+twstock
