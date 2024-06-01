@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  1 14:20:59 2024
-
-@author: 三隻小熊跑得快
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  1 14:20:59 2024
-
-@author: 三隻小熊跑得快
-"""
 
 import os
 import numpy as np
@@ -31,7 +18,7 @@ html_temp = """
 stc.html(html_temp)
 
 ## 读取Pickle文件
-df_original = pd.read_pickle('((0050)2023_20241_processed.pkl')
+df_original = pd.read_pickle('(0050)2023_20241_processed.pkl')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
 ##### 選擇資料區間
