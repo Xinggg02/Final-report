@@ -27,7 +27,7 @@ def load_stock_data(stock_ids):
         stock = twstock.Stock(stock_id)
         real = twstock.realtime.get(stock_id)
         name = real['info']['name'] if real['success'] else stock_id
-        file_name = f"({stock_id})2019_2024.xlsx"
+        file_name = f"({stock_id})2023_2024.xlsx"
         if os.path.exists(file_name):
             stock_dict[name] = file_name
         else:
@@ -44,10 +44,13 @@ selected_stock = st.selectbox("選擇股票", list(stock_dict.keys()))
 if selected_stock in stock_dict:
     try:
         st.write(f"Selected file: {stock_dict[selected_stock]}")
-        
+
         df_original = pd.read_excel(stock_dict[selected_stock])
         df_original = df_original.drop('Unnamed: 0', axis=1)
+
+        df_original['time'] = pd.to_datetime(df_original['time'])
         
+        ##### 選擇資料區間
         st.subheader("選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
         start_date = st.text_input('選擇開始日期 (日期格式: 2019-01-01)', '2019-01-01')
         end_date = st.text_input('選擇結束日期 (日期格式: 2024-05-31)', '2024-05-31')
