@@ -244,12 +244,12 @@ if selected_stocks:
 
                 ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
-                    if stock_id in twstock.codes:
-                        stock_info = twstock.codes[stock_id]
+                    stock_info = twstock.codes.get(stock_id, None)
+                    if stock_info:
                         st.write(f"公司名稱: {stock_info.name}")
-                        st.write(f"產業類別: {stock_info.industry}")
-                        st.write(f"市場: {stock_info.market}")
-                        st.write(f"上市日期: {stock_info.start}")
+                        st.write(f"產業類別: {getattr(stock_info, 'industry', 'N/A')}")
+                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
+                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
                     else:
                         st.write("找不到該股票的詳細信息。")
 
