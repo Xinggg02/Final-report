@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 import datetime
@@ -18,7 +17,7 @@ html_temp = """
 stc.html(html_temp)
 
 ## 读取Pickle文件
-df_original = pd.read_excel('(1215)2023_2024.xlsx')
+df_original = pd.read_excel('kbars_2330_2022-01-01-2022-11-18.xlsx')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
 ##### 選擇資料區間
@@ -60,9 +59,9 @@ KBar_dic['amount'] = np.array(KBar_amount_list)
 
 Date = start_date.strftime("%Y-%m-%d")
 
-st.subheader("設定一根 K 棒的時間長度(分鐘)")
-cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:分鐘, 一日=1440分鐘)', value=1440, key="KBar_duration")
-cycle_duration = int(cycle_duration)
+st.subheader("設定一根 K 棒的時間長度(天數)")
+cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天)', value=1, key="KBar_duration")
+cycle_duration = f'{int(cycle_duration)}D'
 
 ###### (4) 生成 K 棒 ######
 def resample_kbars(df, cycle_duration):
@@ -74,7 +73,7 @@ def resample_kbars(df, cycle_duration):
         'close': 'last',
         'volume': 'sum'
     }
-    df_resampled = df.resample(f'{cycle_duration}T').apply(ohlc_dict).dropna()
+    df_resampled = df.resample(cycle_duration).apply(ohlc_dict).dropna()
     df_resampled.reset_index(inplace=True)
     return df_resampled
 
