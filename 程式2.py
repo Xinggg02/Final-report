@@ -18,7 +18,7 @@ html_temp = """
 stc.html(html_temp)
 
 ## 读取Pickle文件
-df_original = pd.read_pickle('(0050)2023_20241_processed.pkl')
+df_original = pd.read_pickle('(2317)2023_20241_processed.csv')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
 ##### 選擇資料區間
