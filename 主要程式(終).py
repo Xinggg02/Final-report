@@ -9,6 +9,7 @@ import indicator_forKBar_short
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.offline as pyoff
+import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
@@ -20,6 +21,7 @@ html_temp = """
 stc.html(html_temp)
 
 # 定义一个函数来获取股票代码和名称
+@st.cache
 def load_stock_data(stock_ids):
     stock_dict = {}
     for stock_id in stock_ids:
@@ -30,7 +32,7 @@ def load_stock_data(stock_ids):
     return stock_dict
 
 # 股票代碼列表
-stock_ids = ['0050', '00878']
+stock_ids = ['2330', '2317']  
 stock_dict = load_stock_data(stock_ids)
 
 # 生成股票选择列表
