@@ -2,8 +2,8 @@ import os
 import numpy as np
 import datetime
 import pandas as pd
-import streamlit as st 
-import streamlit.components.v1 as stc 
+import streamlit as st
+import streamlit.components.v1 as stc
 import indicator_f_Lo2_short
 import indicator_forKBar_short
 import plotly.graph_objects as go
@@ -13,14 +13,15 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-		<div style="background-color:#3872fb;padding:10px;border-radius:10px">
-		<h1 style="color:white;text-align:center;">股票資料呈現 </h1>
-		<h2 style="color:white;text-align:center;">Final-report </h2>
-		</div>
-		"""
+    <div style="background-color:#3872fb;padding:10px;border-radius:10px">
+    <h1 style="color:white;text-align:center;">股票資料呈現 </h1>
+    <h2 style="color:white;text-align:center;">Final-report </h2>
+    </div>
+    """
 stc.html(html_temp)
 
 # 定義一個函數來取得股票代碼和名稱
+@st.cache
 def load_stock_data(stock_ids):
     stock_dict = {}
     for stock_id in stock_ids:
@@ -29,26 +30,31 @@ def load_stock_data(stock_ids):
         name = real['info']['name'] if real['success'] else stock_id
         file_name = f"({stock_id})2019_2024.xlsx"
         if os.path.exists(file_name):
-            stock_dict[name] = file_name
+            stock_dict[name] = (file_name, stock_id)
         else:
             st.warning(f"File not found: {file_name}")
     return stock_dict
 
 # 股票代碼列表
-stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', '2609', '2615']  
+stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', '2609', '2615']
 stock_dict = load_stock_data(stock_ids)
 
 # 生成股票選擇列表
 selected_stocks = st.multiselect("選擇股票", list(stock_dict.keys()), default=[list(stock_dict.keys())[0]])
 
+@st.cache
+def load_excel_data(file_path):
+    df = pd.read_excel(file_path)
+    df = df.drop('Unnamed: 0', axis=1)
+    df['time'] = pd.to_datetime(df['time'])
+    return df
+
 if selected_stocks:
     for selected_stock in selected_stocks:
         if selected_stock in stock_dict:
             try:
-                df_original = pd.read_excel(stock_dict[selected_stock])
-                df_original = df_original.drop('Unnamed: 0', axis=1)
-
-                df_original['time'] = pd.to_datetime(df_original['time'])
+                file_path, stock_id = stock_dict[selected_stock]
+                df_original = load_excel_data(file_path)
                 
                 ##### 選擇資料區間
                 st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
@@ -61,29 +67,28 @@ if selected_stocks:
                 ###### (2) 轉化為字典 ######:
                 KBar_dic = df.to_dict()
 
-                KBar_open_list = list(KBar_dic['open'].values())
-                KBar_dic['open'] = np.array(KBar_open_list)
+                KBar_open_list = np.array(list(KBar_dic['open'].values()))
+                KBar_dic['open'] = KBar_open_list
 
                 KBar_dic['product'] = np.repeat(selected_stock, KBar_dic['open'].size)
 
-                KBar_time_list = list(KBar_dic['time'].values())
-                KBar_time_list = [i.to_pydatetime() for i in KBar_time_list]  # Timestamp to datetime
+                KBar_time_list = [i.to_pydatetime() for i in KBar_dic['time'].values()]
                 KBar_dic['time'] = np.array(KBar_time_list)
 
-                KBar_low_list = list(KBar_dic['low'].values())
-                KBar_dic['low'] = np.array(KBar_low_list)
+                KBar_low_list = np.array(list(KBar_dic['low'].values()))
+                KBar_dic['low'] = KBar_low_list
 
-                KBar_high_list = list(KBar_dic['high'].values())
-                KBar_dic['high'] = np.array(KBar_high_list)
+                KBar_high_list = np.array(list(KBar_dic['high'].values()))
+                KBar_dic['high'] = KBar_high_list
 
-                KBar_close_list = list(KBar_dic['close'].values())
-                KBar_dic['close'] = np.array(KBar_close_list)
+                KBar_close_list = np.array(list(KBar_dic['close'].values()))
+                KBar_dic['close'] = KBar_close_list
 
-                KBar_volume_list = list(KBar_dic['volume'].values())
-                KBar_dic['volume'] = np.array(KBar_volume_list)
+                KBar_volume_list = np.array(list(KBar_dic['volume'].values()))
+                KBar_dic['volume'] = KBar_volume_list
 
-                KBar_amount_list = list(KBar_dic['amount'].values())
-                KBar_dic['amount'] = np.array(KBar_amount_list)
+                KBar_amount_list = np.array(list(KBar_dic['amount'].values()))
+                KBar_dic['amount'] = KBar_amount_list
 
                 ######  (3) 改變 KBar 時間長度 (以下)  ########
 
@@ -158,7 +163,7 @@ if selected_stocks:
                 ### 尋找最後 NAN值的位置
                 last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
 
-                ###### (5) 將 Dataframe 欄位名稱轉換  ###### 
+                ###### (5) 將 Dataframe 欄位名稱轉換  ######
                 KBar_df.columns = [i[0].upper() + i[1:] for i in KBar_df.columns]
 
                 ###### (6) 增加Bollinger Bands ######
