@@ -21,7 +21,7 @@ html_temp = """
 stc.html(html_temp)
 
 # 定義一個函數來取得股票代碼和名稱
-@st.cache
+@st.cache_data
 def load_stock_data(stock_ids):
     stock_dict = {}
     for stock_id in stock_ids:
@@ -42,7 +42,7 @@ stock_dict = load_stock_data(stock_ids)
 # 生成股票選擇列表
 selected_stocks = st.multiselect("選擇股票", list(stock_dict.keys()), default=[list(stock_dict.keys())[0]])
 
-@st.cache
+@st.cache_data
 def load_excel_data(file_path):
     df = pd.read_excel(file_path)
     df = df.drop('Unnamed: 0', axis=1)
@@ -63,6 +63,16 @@ if selected_stocks:
                 start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
                 end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
+
+                # 重新采样数据（例如，按周采样）
+                df = df.resample('W', on='time').agg({
+                    'open': 'first',
+                    'high': 'max',
+                    'low': 'min',
+                    'close': 'last',
+                    'volume': 'sum',
+                    'amount': 'sum'
+                }).dropna().reset_index()
 
                 ###### (2) 轉化為字典 ######:
                 KBar_dic = df.to_dict()
@@ -234,11 +244,14 @@ if selected_stocks:
 
                 ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
-                    stock_info = twstock.codes[stock_id]
-                    st.write(f"公司名稱: {stock_info.name}")
-                    st.write(f"產業類別: {stock_info.industry}")
-                    st.write(f"市場: {stock_info.market}")
-                    st.write(f"上市日期: {stock_info.start}")
+                    if stock_id in twstock.codes:
+                        stock_info = twstock.codes[stock_id]
+                        st.write(f"公司名稱: {stock_info.name}")
+                        st.write(f"產業類別: {stock_info.industry}")
+                        st.write(f"市場: {stock_info.market}")
+                        st.write(f"上市日期: {stock_info.start}")
+                    else:
+                        st.write("找不到該股票的詳細信息。")
 
             except FileNotFoundError as e:
                 st.error(f"Error: {e}")
