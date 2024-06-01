@@ -14,20 +14,20 @@ import twstock
 ###### (1) 開始設定 ######
 html_temp = """
 		<div style="background-color:#3872fb;padding:10px;border-radius:10px">
-		<h1 style="color:white;text-align:center;">金融資料視覺化呈現 (金融看板) </h1>
-		<h2 style="color:white;text-align:center;">Financial Dashboard </h2>
+		<h1 style="color:white;text-align:center;">股票資料呈現 </h1>
+		<h2 style="color:white;text-align:center;">Final-report </h2>
 		</div>
 		"""
 stc.html(html_temp)
 
-# 定义一个函数来获取股票代码和名称
+# 定義一個函數來取得股票代碼和名稱
 def load_stock_data(stock_ids):
     stock_dict = {}
     for stock_id in stock_ids:
         stock = twstock.Stock(stock_id)
         real = twstock.realtime.get(stock_id)
         name = real['info']['name'] if real['success'] else stock_id
-        file_name = f"({stock_id})2019_2024_{name}.xlsx"
+        file_name = f"({stock_id})2019_2024.xlsx"
         if os.path.exists(file_name):
             stock_dict[name] = file_name
         else:
@@ -38,19 +38,16 @@ def load_stock_data(stock_ids):
 stock_ids = ['0050', '00878']  
 stock_dict = load_stock_data(stock_ids)
 
-# 生成股票选择列表
+# 生成股票選擇列表
 selected_stock = st.selectbox("選擇股票", list(stock_dict.keys()))
 
 if selected_stock in stock_dict:
     try:
-        # 调试信息：显示所选文件的路径
         st.write(f"Selected file: {stock_dict[selected_stock]}")
         
-        # 读取选定股票的Excel文件
         df_original = pd.read_excel(stock_dict[selected_stock])
         df_original = df_original.drop('Unnamed: 0', axis=1)
         
-        ##### 選擇資料區間
         st.subheader("選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
         start_date = st.text_input('選擇開始日期 (日期格式: 2019-01-01)', '2019-01-01')
         end_date = st.text_input('選擇結束日期 (日期格式: 2024-05-31)', '2024-05-31')
