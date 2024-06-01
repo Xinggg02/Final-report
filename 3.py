@@ -16,7 +16,7 @@ html_temp = """
 		"""
 stc.html(html_temp)
 
-## 读取Pickle文件
+## 读取Excel文件
 df_original = pd.read_excel('kbars_2330_2022-01-01-2022-11-18.xlsx')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
@@ -116,7 +116,7 @@ if '相對強弱指標 (RSI)' in indicators:
     
     KBar_df['RSI_long'] = calculate_rsi(KBar_df, LongRSIPeriod)
     KBar_df['RSI_short'] = calculate_rsi(KBar_df, ShortRSIPeriod)
-    KBar_df['RSI_Middle'] = np.array([50] * len(KBar_dic['time']))
+    KBar_df['RSI_Middle'] = np.array([50] * len(KBar_df))
     last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
 
 ##### 設定 MACD 參數 #####
@@ -127,101 +127,4 @@ if 'MACD' in indicators:
         macd = short_ema - long_ema
         signal = macd.ewm(span=signal_period, adjust=False).mean()
         hist = macd - signal
-        return macd, signal, hist
-    
-    KBar_df['MACD'], KBar_df['MACD_Signal'], KBar_df['MACD_Hist'] = calculate_macd(KBar_df)
-
-##### 設定布林帶參數 #####
-if '布林帶 (Bollinger Bands)' in indicators:
-    st.subheader("設定計算布林帶的 K 棒數目(整數, 例如 20)")
-    BollingerPeriod = st.slider('選擇一個整數', 0, 1000, 20)
-    KBar_df['Bollinger_Mid'] = KBar_df['Close'].rolling(window=BollingerPeriod).mean()
-    KBar_df['Bollinger_Std'] = KBar_df['Close'].rolling(window=BollingerPeriod).std()
-    KBar_df['Bollinger_Upper'] = KBar_df['Bollinger_Mid'] + (KBar_df['Bollinger_Std'] * 2)
-    KBar_df['Bollinger_Lower'] = KBar_df['Bollinger_Mid'] - (KBar_df['Bollinger_Std'] * 2)
-
-###### (7) 畫圖 ######
-st.subheader("畫圖")
-
-##### K線圖, 移動平均線 MA #####
-with st.expander("K線圖, 移動平均線"):
-    fig1 = make_subplots(specs=[[{"secondary_y": True}]])
-    
-    #### include candlestick with rangeselector
-    fig1.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                  open=KBar_df['Open'], high=KBar_df['High'],
-                                  low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                   secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-    
-    #### include a go.Bar trace for volumes
-    fig1.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')),
-                   secondary_y=False)  ## secondary_y=False 表示此圖形的y軸scale是在左邊而不是在右邊
-    
-    if '移動平均線 (MA)' in indicators:
-        fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), 
-                      secondary_y=True)
-        fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), 
-                      secondary_y=True)
-    
-    fig1.layout.yaxis2.showgrid=True
-    st.plotly_chart(fig1, use_container_width=True)
-
-##### K線圖, RSI #####
-if '相對強弱指標 (RSI)' in indicators:
-    with st.expander("K線圖, 長短 RSI"):
-        fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
-                      secondary_y=False)
-        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
-                      secondary_y=False)
-        
-        fig2.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig2, use_container_width=True)
-
-##### K線圖, MACD #####
-if 'MACD' in indicators:
-    with st.expander("K線圖, MACD"):
-        fig3 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig3.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), 
-                      secondary_y=False)
-        fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD_Signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), 
-                      secondary_y=False)
-        fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_Hist'], name='MACD 柱狀圖'), secondary_y=False)
-        
-        fig3.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig3, use_container_width=True)
-
-##### K線圖, 布林帶 #####
-if '布林帶 (Bollinger Bands)' in indicators:
-    with st.expander("K線圖, 布林帶"):
-        fig4 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig4.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Mid'], mode='lines', line=dict(color='blue', width=2), name='布林帶中線'), 
-                      secondary_y=True)
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Upper'], mode='lines', line=dict(color='red', width=2), name='布林帶上軌'), 
-                      secondary_y=True)
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Lower'], mode='lines', line=dict(color='green', width=2), name='布林帶下軌'), 
-                      secondary_y=True)
-        
-        fig4.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig4, use_container_width=True)
+        return macd, signal,
