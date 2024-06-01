@@ -32,7 +32,7 @@ def load_stock_data(stock_ids):
     return stock_dict
 
 # 股票代碼列表
-stock_ids = ['2330', '2317']  
+stock_ids = ['0050', '00878']  
 stock_dict = load_stock_data(stock_ids)
 
 # 生成股票选择列表
