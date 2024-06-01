@@ -1,0 +1,12 @@
+
+
+numpy
+streamlit
+streamlit_webrtc
+streamlit-nested-layout
+matplotlib
+openpyxl
+plotly
+mplfinance
+shioaji
+pynacl
