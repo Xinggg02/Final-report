@@ -16,7 +16,7 @@ html_temp = """
 		"""
 stc.html(html_temp)
 
-## 读取Pickle文件
+## 读取Excel文件
 df_original = pd.read_excel('(1215)2023_2024.xlsx')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
@@ -97,7 +97,10 @@ if '移動平均線 (MA)' in indicators:
     ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2)
     KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
     KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
-    last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
+    if KBar_df['MA_long'].isna().any():
+        last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
+    else:
+        last_nan_index_MA = -1  # 如果没有NaN值
 
 ##### 設定 RSI 參數 #####
 if '相對強弱指標 (RSI)' in indicators:
@@ -117,7 +120,10 @@ if '相對強弱指標 (RSI)' in indicators:
     KBar_df['RSI_long'] = calculate_rsi(KBar_df, LongRSIPeriod)
     KBar_df['RSI_short'] = calculate_rsi(KBar_df, ShortRSIPeriod)
     KBar_df['RSI_Middle'] = np.array([50] * len(KBar_df))
-    last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
+    if KBar_df['RSI_long'].isna().any():
+        last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
+    else:
+        last_nan_index_RSI = -1  # 如果没有NaN值
 
 ##### 設定 MACD 參數 #####
 if 'MACD' in indicators:
@@ -158,10 +164,16 @@ with st.expander("K線圖, 移動平均線"):
                    secondary_y=False)  ## secondary_y=False 表示此圖形的y軸scale是在左邊而不是在右邊
     
     if '移動平均線 (MA)' in indicators:
-        fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), 
-                      secondary_y=True)
-        fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), 
-                      secondary_y=True)
+        if last_nan_index_MA != -1:
+            fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), 
+                          secondary_y=True)
+            fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), 
+                          secondary_y=True)
+        else:
+            fig1.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MA_long'], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), 
+                          secondary_y=True)
+            fig1.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MA_short'], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), 
+                          secondary_y=True)
     
     fig1.layout.yaxis2.showgrid=True
     st.plotly_chart(fig1, use_container_width=True)
@@ -177,10 +189,16 @@ if '相對強弱指標 (RSI)' in indicators:
                                       low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
                        secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
         
-        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
-                      secondary_y=False)
-        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
-                      secondary_y=False)
+        if last_nan_index_RSI != -1:
+            fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
+                          secondary_y=False)
+            fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
+                          secondary_y=False)
+        else:
+            fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_long'], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
+                          secondary_y=False)
+            fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_short'], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
+                          secondary_y=False)
         
         fig2.layout.yaxis2.showgrid=True
         st.plotly_chart(fig2, use_container_width=True)
