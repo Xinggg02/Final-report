@@ -27,7 +27,7 @@ def load_stock_data(stock_ids):
         stock = twstock.Stock(stock_id)
         real = twstock.realtime.get(stock_id)
         name = real['info']['name'] if real['success'] else stock_id
-        file_name = f"({stock_id})2023_2024_{name}.xlsx"
+        file_name = f"({stock_id})2019_2024_{name}.xlsx"
         if os.path.exists(file_name):
             stock_dict[name] = file_name
         else:
@@ -43,6 +43,9 @@ selected_stock = st.selectbox("選擇股票", list(stock_dict.keys()))
 
 if selected_stock in stock_dict:
     try:
+        # 调试信息：显示所选文件的路径
+        st.write(f"Selected file: {stock_dict[selected_stock]}")
+        
         # 读取选定股票的Excel文件
         df_original = pd.read_excel(stock_dict[selected_stock])
         df_original = df_original.drop('Unnamed: 0', axis=1)
