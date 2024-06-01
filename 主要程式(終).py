@@ -20,7 +20,6 @@ html_temp = """
 stc.html(html_temp)
 
 # 定义一个函数来获取股票代码和名称
-@st.cache
 def load_stock_data(stock_ids):
     stock_dict = {}
     for stock_id in stock_ids:
