@@ -1,3 +1,4 @@
+# 載入必要模組
 import os
 import numpy as np
 import datetime
@@ -16,7 +17,7 @@ html_temp = """
 		"""
 stc.html(html_temp)
 
-## 读取Excel文件
+## 读取Pickle文件
 df_original = pd.read_excel('(1215)2023_2024.xlsx')
 df_original = df_original.drop('Unnamed: 0', axis=1)
 
@@ -56,7 +57,6 @@ KBar_amount_list = list(KBar_dic['amount'].values())
 KBar_dic['amount'] = np.array(KBar_amount_list)
 
 ###### (3) 改變 KBar 時間長度 (以下) ########
-
 Date = start_date.strftime("%Y-%m-%d")
 
 st.subheader("設定一根 K 棒的時間長度(天數)")
@@ -179,67 +179,25 @@ with st.expander("K線圖, 移動平均線"):
     st.plotly_chart(fig1, use_container_width=True)
 
 ##### K線圖, RSI #####
-if '相對強弱指標 (RSI)' in indicators:
-    with st.expander("K線圖, 長短 RSI"):
-        fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        if last_nan_index_RSI != -1:
-            fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
-                          secondary_y=False)
-            fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
-                          secondary_y=False)
-        else:
-            fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_long'], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
-                          secondary_y=False)
-            fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_short'], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
-                          secondary_y=False)
-        
-        fig2.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig2, use_container_width=True)
-
-##### K線圖, MACD #####
-if 'MACD' in indicators:
-    with st.expander("K線圖, MACD"):
-        fig3 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig3.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), 
+with st.expander("K線圖, 長短 RSI"):
+    fig2 = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    #### include candlestick with rangeselector
+    fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
+                                  open=KBar_df['Open'], high=KBar_df['High'],
+                                  low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
+                   secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
+    
+    if last_nan_index_RSI != -1:
+        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
                       secondary_y=False)
-        fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD_Signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), 
+        fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
                       secondary_y=False)
-        fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_Hist'], name='MACD 柱狀圖'), secondary_y=False)
-        
-        fig3.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig3, use_container_width=True)
-
-##### K線圖, 布林帶 #####
-if '布林帶 (Bollinger Bands)' in indicators:
-    with st.expander("K線圖, 布林帶"):
-        fig4 = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        #### include candlestick with rangeselector
-        fig4.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                      open=KBar_df['Open'], high=KBar_df['High'],
-                                      low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                       secondary_y=True)  ## secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-        
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Mid'], mode='lines', line=dict(color='blue', width=2), name='布林帶中線'), 
-                      secondary_y=True)
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Upper'], mode='lines', line=dict(color='red', width=2), name='布林帶上軌'), 
-                      secondary_y=True)
-        fig4.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['Bollinger_Lower'], mode='lines', line=dict(color='green', width=2), name='布林帶下軌'), 
-                      secondary_y=True)
-        
-        fig4.layout.yaxis2.showgrid=True
-        st.plotly_chart(fig4, use_container_width=True)
+    else:
+        fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_long'], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), 
+                      secondary_y=False)
+        fig2.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['RSI_short'], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), 
+                      secondary_y=False)
+    
+    fig2.layout.yaxis2.showgrid=True
+    st.plotly_chart(fig2, use_container_width=True)
