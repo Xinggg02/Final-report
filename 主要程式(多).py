@@ -50,7 +50,7 @@ def load_excel_data(file_path):
     return df
 
 if selected_stocks:
-    for selected_stock in selected_stocks:
+    for index, selected_stock in enumerate(selected_stocks):
         if selected_stock in stock_dict:
             try:
                 file_path, stock_id = stock_dict[selected_stock]
@@ -58,8 +58,8 @@ if selected_stocks:
                 
                 ##### 選擇資料區間
                 st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
-                start_date = st.text_input('選擇開始日期 (日期格式: 2019-01-01)', '2019-01-01')
-                end_date = st.text_input('選擇結束日期 (日期格式: 2024-05-31)', '2024-05-31')
+                start_date = st.text_input(f'選擇開始日期 (日期格式: 2019-01-01)', '2019-01-01', key=f"start_date_{index}")
+                end_date = st.text_input(f'選擇結束日期 (日期格式: 2024-05-31)', '2024-05-31', key=f"end_date_{index}")
                 start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
                 end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
@@ -105,7 +105,7 @@ if selected_stocks:
                 Date = start_date.strftime("%Y-%m-%d")
 
                 st.subheader("設定一根 K 棒的時間長度(天數)")
-                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{selected_stock}")
+                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
                 cycle_duration = int(cycle_duration)
 
                 KBar = indicator_forKBar_short.KBar(Date, cycle_duration)  # 設定 cycle_duration 可以改成你想要的 KBar 週期
@@ -137,9 +137,9 @@ if selected_stocks:
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 10)")
-                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 10, key=f"LongMAPeriod_{selected_stock}")
+                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 10, key=f"LongMAPeriod_{index}")
                 st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目(整數, 例如 2)")
-                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{selected_stock}")
+                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
                 KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
@@ -152,9 +152,9 @@ if selected_stocks:
                 #### 順勢策略
                 ### 設定長短 RSI 的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長RSI的 K 棒數目(整數, 例如 10)")
-                LongRSIPeriod = st.slider('選擇一個整數', 0, 1000, 10, key=f"LongRSIPeriod_{selected_stock}")
+                LongRSIPeriod = st.slider('選擇一個整數', 0, 1000, 10, key=f"LongRSIPeriod_{index}")
                 st.subheader(f"{selected_stock} - 設定計算短RSI的 K 棒數目(整數, 例如 2)")
-                ShortRSIPeriod = st.slider('選擇一個整數', 0, 1000, 2, key=f"ShortRSIPeriod_{selected_stock}")
+                ShortRSIPeriod = st.slider('選擇一個整數', 0, 1000, 2, key=f"ShortRSIPeriod_{index}")
 
                 ### 計算 RSI指標長短線, 以及定義中線
                 def calculate_rsi(df, period=14):
@@ -178,7 +178,7 @@ if selected_stocks:
 
                 ###### (6) 增加Bollinger Bands ######
                 st.subheader(f"{selected_stock} - 設定計算布林通道(Bollinger Bands)的 K 棒數目(整數, 例如 20)")
-                BBPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"BBPeriod_{selected_stock}")
+                BBPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"BBPeriod_{index}")
                 KBar_df['MA'] = KBar_df['Close'].rolling(window=BBPeriod).mean()
                 KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
                 KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
@@ -225,9 +225,9 @@ if selected_stocks:
                 ##### 增加MACD圖表 #####
                 with st.expander(f"{selected_stock} - MACD 圖表"):
                     st.subheader("MACD 計算參數")
-                    macd_fast = st.slider('MACD 快線週期', 1, 50, 12, key=f"macd_fast_{selected_stock}")
-                    macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{selected_stock}")
-                    macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{selected_stock}")
+                    macd_fast = st.slider('MACD 快線週期', 1, 50, 12, key=f"macd_fast_{index}")
+                    macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
+                    macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{index}")
 
                     KBar_df['EMA_fast'] = KBar_df['Close'].ewm(span=macd_fast, adjust=False).mean()
                     KBar_df['EMA_slow'] = KBar_df['Close'].ewm(span=macd_slow, adjust=False).mean()
