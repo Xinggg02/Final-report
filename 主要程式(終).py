@@ -27,7 +27,7 @@ def load_stock_data(stock_ids):
         stock = twstock.Stock(stock_id)
         real = twstock.realtime.get(stock_id)
         name = real['info']['name'] if real['success'] else stock_id
-        file_name = f"({stock_id})2023_2024.xlsx"
+        file_name = f"({stock_id})2019_2024.xlsx"
         if os.path.exists(file_name):
             stock_dict[name] = file_name
         else:
