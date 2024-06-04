@@ -247,7 +247,6 @@ if selected_stocks:
                     stock_info = twstock.codes.get(stock_id, None)
                     if stock_info:
                         st.write(f"公司名稱: {stock_info.name}")
-                        st.write(f"產業類別: {getattr(stock_info, 'industry', 'N/A')}")
                         st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
                         st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
                     else:
