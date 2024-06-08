@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  8 17:10:06 2024
-
-@author: 三隻小熊跑得快
-"""
-
 import os
 import numpy as np
 import datetime
@@ -189,18 +182,24 @@ if selected_stocks:
                 KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
                 KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
 
-                ###### (7) 畫圖 ######
+                ###### (7) 增加唐奇安通道 ######
+                st.subheader(f"{selected_stock} - 設定計算唐奇安通道(Donchian Channels)的 K 棒數目(整數, 例如 20)")
+                DCPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"DCPeriod_{index}")
+                KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPeriod).max()
+                KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPeriod).min()
+
+                ###### (8) 畫圖 ######
                 st.subheader("畫圖")
 
-                ##### K線圖, 移動平均線 MA 和布林通道
-                with st.expander(f"{selected_stock} - K線圖, 移動平均線和布林通道"):
+                ##### K線圖, 移動平均線 MA 和布林通道, 唐奇安通道
+                with st.expander(f"{selected_stock} - K線圖, 移動平均線和布林通道, 唐奇安通道"):
                     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
                     fig1.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
                                     low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
+                                   secondary_y=True)
 
                     #### include a go.Bar trace for volumes
                     fig1.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
@@ -208,6 +207,8 @@ if selected_stocks:
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
+                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
+                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig1.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig1, use_container_width=True)
@@ -220,7 +221,7 @@ if selected_stocks:
                     fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
                                     low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
+                                   secondary_y=True)
 
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=False)
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=False)
