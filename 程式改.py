@@ -48,6 +48,40 @@ def load_excel_data(file_path):
     df['time'] = pd.to_datetime(df['time'])
     return df
 
+def calculate_rsi(df, period=14):
+    delta = df['close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
+    KBar_df['signal'] = 0
+    KBar_df['signal'][ShortMAPeriod:] = np.where(
+        KBar_df['MA_short'][ShortMAPeriod:] > KBar_df['MA_long'][ShortMAPeriod:], 1, -1)
+    KBar_df['position'] = KBar_df['signal'].shift()
+    
+    KBar_df['returns'] = KBar_df['close'].pct_change()
+    KBar_df['strategy'] = KBar_df['returns'] * KBar_df['position']
+    
+    KBar_df['trade_value'] = KBar_df['strategy'] * TradeVolume
+    KBar_df['cumulative_returns'] = (KBar_df['trade_value'] + 1).cumprod() - 1
+    KBar_df['cumulative_strategy'] = (KBar_df['strategy'] + 1).cumprod() - 1
+    
+    trade_results = {
+        '交易總盈虧(元)': KBar_df['trade_value'].sum(),
+        '平均每交易盈虧(元)': KBar_df['trade_value'].mean(),
+        '平均投資報酬率': KBar_df['strategy'].mean(),
+        '平均獲利(只看獲利的)(元)': KBar_df[KBar_df['trade_value'] > 0]['trade_value'].mean(),
+        '平均虧損(只看虧損的)(元)': KBar_df[KBar_df['trade_value'] < 0]['trade_value'].mean(),
+        '勝率': KBar_df[KBar_df['trade_value'] > 0].shape[0] / KBar_df[KBar_df['trade_value'] != 0].shape[0],
+        '最大連續虧損(元)': KBar_df['trade_value'].min(),
+        '最大盈虧回落(MDD)': (KBar_df['cumulative_returns'].max() - KBar_df['cumulative_returns'].min()),
+        '績效風險比(交易總盈虧/最大盈虧回落(MDD))': KBar_df['trade_value'].sum() / (KBar_df['cumulative_returns'].max() - KBar_df['cumulative_returns'].min())
+    }
+    return trade_results
+
 if selected_stocks:
     for index, selected_stock in enumerate(selected_stocks):
         if selected_stock in stock_dict:
@@ -55,7 +89,7 @@ if selected_stocks:
                 file_path, stock_id = stock_dict[selected_stock]
                 df_original = load_excel_data(file_path)
                 
-                ##### 選擇資料區間
+                ##### 選擇資料區間 #####
                 st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
                 start_date = st.text_input(f'選擇開始日期 (日期格式: 2019-01-01)', '2019-01-01', key=f"start_date_{index}")
                 end_date = st.text_input(f'選擇結束日期 (日期格式: 2024-05-31)', '2024-05-31', key=f"end_date_{index}")
@@ -156,15 +190,6 @@ if selected_stocks:
                 ShortRSIPeriod = st.slider('選擇一個整數', 0, 1000, 2, key=f"ShortRSIPeriod_{index}")
 
                 ### 計算 RSI指標長短線, 以及定義中線
-                def calculate_rsi(df, period=14):
-                    delta = df['close'].diff()
-                    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-                    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-
-                    rs = gain / loss
-                    rsi = 100 - (100 / (1 + rs))
-                    return rsi
-
                 KBar_df['RSI_long'] = calculate_rsi(KBar_df, LongRSIPeriod)
                 KBar_df['RSI_short'] = calculate_rsi(KBar_df, ShortRSIPeriod)
                 KBar_df['RSI_Middle'] = np.array([50] * len(KBar_dic['time']))
@@ -188,11 +213,21 @@ if selected_stocks:
                 KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPeriod).max()
                 KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPeriod).min()
 
-                ###### (8) 畫圖 ######
-                st.subheader("畫圖")
+                ###### (8) 增加程式交易策略 ######
+                st.subheader("程式交易:")
+                strategy = st.selectbox("選擇交易策略", ["移動平均線黃金交叉做多，死亡交叉做空，<出場>結算平倉(期貨)，移動停損"])
+                
+                st.subheader(f"{selected_stock} - 設定策略參數")
+                TradeVolume = st.slider('設置交易每次購買量', 1, 1000, 100, key=f"TradeVolume_{index}")
 
-                ##### K線圖, 移動平均線 MA 和布林通道, 唐奇安通道
-                with st.expander(f"{selected_stock} - K線圖, 移動平均線和布林通道, 唐奇安通道"):
+                # 計算策略結果
+                trade_results = backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume)
+
+                ###### (9) 畫圖 ######
+                st.subheader("技術指標視覺化圖形")
+
+                ##### K線圖和移動平均線 #####
+                with st.expander(f"{selected_stock} - K線圖和移動平均線"):
                     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -205,16 +240,12 @@ if selected_stocks:
                     fig1.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig1.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig1, use_container_width=True)
 
-                ##### K線圖, RSI
-                with st.expander(f"{selected_stock} - K線圖, 長短 RSI"):
+                ##### K線圖和布林通道 #####
+                with st.expander(f"{selected_stock} - K線圖和布林通道"):
                     fig2 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -223,31 +254,42 @@ if selected_stocks:
                                     low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
                                    secondary_y=True)
 
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=False)
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=False)
+                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
+                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
 
                     fig2.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig2, use_container_width=True)
 
-                ##### 增加MACD圖表 #####
-                with st.expander(f"{selected_stock} - MACD 圖表"):
-                    st.subheader("MACD 計算參數")
-                    macd_fast = st.slider('MACD 快線週期', 1, 50, 12, key=f"macd_fast_{index}")
-                    macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
-                    macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{index}")
+                ##### K線圖和唐奇安通道 #####
+                with st.expander(f"{selected_stock} - K線圖和唐奇安通道"):
+                    fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    KBar_df['EMA_fast'] = KBar_df['Close'].ewm(span=macd_fast, adjust=False).mean()
-                    KBar_df['EMA_slow'] = KBar_df['Close'].ewm(span=macd_slow, adjust=False).mean()
-                    KBar_df['MACD'] = KBar_df['EMA_fast'] - KBar_df['EMA_slow']
-                    KBar_df['MACD_signal'] = KBar_df['MACD'].ewm(span=macd_signal, adjust=False).mean()
-                    KBar_df['MACD_hist'] = KBar_df['MACD'] - KBar_df['MACD_signal']
+                    #### include candlestick with rangeselector
+                    fig3.add_trace(go.Candlestick(x=KBar_df['Time'],
+                                    open=KBar_df['Open'], high=KBar_df['High'],
+                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
+                                   secondary_y=True)
 
-                    fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD_signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
-                    fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
+                    fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
+
+                ##### 長短RSI #####
+                with st.expander(f"{selected_stock} - 長短RSI"):
+                    fig4 = make_subplots(specs=[[{"secondary_y": True}]])
+
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+
+                    fig4.layout.yaxis2.showgrid = True
+                    st.plotly_chart(fig4, use_container_width=True)
+
+                ##### 程式交易結果 #####
+                with st.expander(f"{selected_stock} - 程式交易結果"):
+                    trade_results_df = pd.DataFrame(list(trade_results.items()), columns=['項目', '數值'])
+                    st.table(trade_results_df)
 
                 ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
