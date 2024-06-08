@@ -170,6 +170,18 @@ if selected_stocks:
                 # 打印列名調試
                 st.write("DataFrame columns:", KBar_df.columns)
 
+                # 確保所有列名都是正確的
+                if 'close' not in KBar_df.columns:
+                    KBar_df.rename(columns={'Close': 'close'}, inplace=True)
+                if 'open' not in KBar_df.columns:
+                    KBar_df.rename(columns={'Open': 'open'}, inplace=True)
+                if 'high' not in KBar_df.columns:
+                    KBar_df.rename(columns={'High': 'high'}, inplace=True)
+                if 'low' not in KBar_df.columns:
+                    KBar_df.rename(columns={'Low': 'low'}, inplace=True)
+                if 'volume' not in KBar_df.columns:
+                    KBar_df.rename(columns={'Volume': 'volume'}, inplace=True)
+
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 10)")
@@ -178,8 +190,8 @@ if selected_stocks:
                 ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
-                KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
-                KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
+                KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
+                KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
@@ -296,15 +308,4 @@ if selected_stocks:
 
                 ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
-                    stock_info = twstock.codes.get(stock_id, None)
-                    if stock_info:
-                        st.write(f"公司名稱: {stock_info.name}")
-                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
-                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
-                    else:
-                        st.write("找不到該股票的詳細信息。")
-
-            except FileNotFoundError as e:
-                st.error(f"Error: {e}")
-else:
-    st.error("請選擇至少一個股票。")
+                   
