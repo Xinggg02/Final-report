@@ -62,7 +62,7 @@ def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
         KBar_df['MA_short'][ShortMAPeriod:] > KBar_df['MA_long'][ShortMAPeriod:], 1, -1)
     KBar_df['position'] = KBar_df['signal'].shift()
     
-    KBar_df['returns'] = KBar_df['close'].pct_change()
+    KBar_df['returns'] = KBar_df['Close'].pct_change()
     KBar_df['strategy'] = KBar_df['returns'] * KBar_df['position']
     
     KBar_df['trade_value'] = KBar_df['strategy'] * TradeVolume
@@ -178,8 +178,8 @@ if selected_stocks:
                 ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
-                KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
-                KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
+                KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
+                KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
