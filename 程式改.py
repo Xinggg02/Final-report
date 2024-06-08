@@ -167,6 +167,9 @@ if selected_stocks:
 
                 KBar_df = pd.DataFrame(KBar_dic)
 
+                # 打印列名調試
+                st.write("DataFrame columns:", KBar_df.columns)
+
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 10)")
@@ -224,7 +227,7 @@ if selected_stocks:
                 trade_results = backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume)
 
                 ###### (9) 畫圖 ######
-                st.subheader("技術指標視覺化圖形")
+                st.subheader("畫圖")
 
                 ##### K線圖和移動平均線 #####
                 with st.expander(f"{selected_stock} - K線圖和移動平均線"):
