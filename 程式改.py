@@ -56,6 +56,23 @@ def calculate_rsi(df, period=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+def calculate_obv(df):
+    df['obv'] = 0
+    df['obv'][1:] = np.where(df['close'][1:] > df['close'][:-1], df['volume'][1:], -df['volume'][1:])
+    df['obv'] = df['obv'].cumsum()
+    return df['obv']
+
+def calculate_kdj(df, period=9, k_period=3, d_period=3):
+    low_list = df['low'].rolling(window=period).min()
+    high_list = df['high'].rolling(window=period).max()
+    rsv = (df['close'] - low_list) / (high_list - low_list) * 100
+
+    df['K'] = rsv.ewm(com=(k_period - 1), min_periods=1).mean()
+    df['D'] = df['K'].ewm(com=(d_period - 1), min_periods=1).mean()
+    df['J'] = 3 * df['K'] - 2 * df['D']
+
+    return df[['K', 'D', 'J']]
+
 def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
     KBar_df['signal'] = 0
     KBar_df['signal'][ShortMAPeriod:] = np.where(
@@ -212,6 +229,13 @@ if selected_stocks:
                 ### 尋找最後 NAN值的位置
                 last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
 
+                #####  (iii) OBV 計算  #####
+                KBar_df['OBV'] = calculate_obv(KBar_df)
+
+                #####  (iv) KDJ 計算  #####
+                KDJ = calculate_kdj(KBar_df)
+                KBar_df = pd.concat([KBar_df, KDJ], axis=1)
+
                 ###### (5) 將 Dataframe 欄位名稱轉換  ######
                 KBar_df.columns = [i[0].upper() + i[1:] for i in KBar_df.columns]
 
@@ -300,6 +324,26 @@ if selected_stocks:
 
                     fig4.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig4, use_container_width=True)
+
+                ##### OBV 圖 #####
+                with st.expander(f"{selected_stock} - OBV 圖"):
+                    fig5 = make_subplots(specs=[[{"secondary_y": True}]])
+
+                    fig5.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['OBV'], mode='lines', line=dict(color='blue', width=2), name='OBV'))
+
+                    fig5.layout.yaxis2.showgrid = True
+                    st.plotly_chart(fig5, use_container_width=True)
+
+                ##### KDJ 圖 #####
+                with st.expander(f"{selected_stock} - KDJ 圖"):
+                    fig6 = make_subplots(specs=[[{"secondary_y": True}]])
+
+                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['K'], mode='lines', line=dict(color='blue', width=2), name='K'))
+                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['D'], mode='lines', line=dict(color='red', width=2), name='D'))
+                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['J'], mode='lines', line=dict(color='green', width=2), name='J'))
+
+                    fig6.layout.yaxis2.showgrid = True
+                    st.plotly_chart(fig6, use_container_width=True)
 
                 ##### 程式交易結果 #####
                 with st.expander(f"{selected_stock} - 程式交易結果"):
