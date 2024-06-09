@@ -62,7 +62,7 @@ def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
         KBar_df['MA_short'][ShortMAPeriod:] > KBar_df['MA_long'][ShortMAPeriod:], 1, -1)
     KBar_df['position'] = KBar_df['signal'].shift()
     
-    KBar_df['returns'] = KBar_df['Close'].pct_change()
+    KBar_df['returns'] = KBar_df['close'].pct_change()
     KBar_df['strategy'] = KBar_df['returns'] * KBar_df['position']
     
     KBar_df['trade_value'] = KBar_df['strategy'] * TradeVolume
@@ -308,4 +308,15 @@ if selected_stocks:
 
                 ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
-                   
+                    stock_info = twstock.codes.get(stock_id, None)
+                    if stock_info:
+                        st.write(f"公司名稱: {stock_info.name}")
+                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
+                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
+                    else:
+                        st.write("找不到該股票的詳細信息。")
+
+            except FileNotFoundError as e:
+                st.error(f"Error: {e}")
+else:
+    st.error("請選擇至少一個股票。")
