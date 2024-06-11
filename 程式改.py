@@ -57,10 +57,20 @@ def calculate_rsi(df, period=14):
     return rsi
 
 def calculate_obv(df):
-    df['obv'] = 0
-    df['obv'][1:] = np.where(df['close'][1:] > df['close'][:-1], df['volume'][1:], -df['volume'][1:])
-    df['obv'] = df['obv'].cumsum()
+    obv = [0]  # 初始化 OBV 值
+    for i in range(1, len(df)):
+        if df['close'][i] > df['close'][i - 1]:
+            obv.append(obv[-1] + df['volume'][i])
+        elif df['close'][i] < df['close'][i - 1]:
+            obv.append(obv[-1] - df['volume'][i])
+        else:
+            obv.append(obv[-1])
+    df['obv'] = obv
     return df['obv']
+
+# 使用修正後的calculate_obv函數
+KBar_df['OBV'] = calculate_obv(KBar_df)
+
 
 def calculate_kdj(df, period=9, k_period=3, d_period=3):
     low_list = df['low'].rolling(window=period).min()
