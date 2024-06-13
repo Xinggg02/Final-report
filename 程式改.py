@@ -157,7 +157,6 @@ if selected_stocks:
                 KBar_df['time'] = pd.to_datetime(KBar_df['time'])
 
                 ###### (3) 計算策略 ######
-                # 定義長短期移動平均線周期
                 LongMAPeriod = 90
                 ShortMAPeriod = 10
                 TradeVolume = 1000
