@@ -3,7 +3,6 @@ import numpy as np
 import datetime
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as stc
 import indicator_f_Lo2_short
 import indicator_forKBar_short
 import plotly.graph_objects as go
@@ -12,12 +11,12 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-    <div style="background-color:#3872fb;padding:10px;border-radius:10px">
-    <h1 style="color:white;text-align:center;">股票資料呈現 </h1>
-    <h2 style="color:white;text-align:center;">Final-report </h2>
-    </div>
-    """
-stc.html(html_temp, unsafe_allow_html=True)
+<div style="background-color:#3872fb;padding:10px;border-radius:10px">
+<h1 style="color:white;text-align:center;">股票資料呈現 </h1>
+<h2 style="color:white;text-align:center;">Final-report </h2>
+</div>
+"""
+st.markdown(html_temp, unsafe_allow_html=True)
 
 # 定義一個函數來取得股票代碼和名稱
 @st.cache_data
