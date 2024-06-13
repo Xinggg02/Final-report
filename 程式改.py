@@ -69,15 +69,19 @@ def calculate_obv(df):
     return df['obv']
 
 def calculate_kdj(df, period=9, k_period=3, d_period=3):
-    low_list = df['low'].rolling(window=period).min()
-    high_list = df['high'].rolling(window=period).max()
-    rsv = (df['close'] - low_list) / (high_list - low_list) * 100
+    try:
+        low_list = df['low'].rolling(window=period).min()
+        high_list = df['high'].rolling(window=period).max()
+        rsv = (df['close'] - low_list) / (high_list - low_list) * 100
 
-    df['K'] = rsv.ewm(com=(k_period - 1), min_periods=1).mean()
-    df['D'] = df['K'].ewm(com=(d_period - 1), min_periods=1).mean()
-    df['J'] = 3 * df['K'] - 2 * df['D']
+        df['K'] = rsv.ewm(com=(k_period - 1), min_periods=1).mean()
+        df['D'] = df['K'].ewm(com=(d_period - 1), min_periods=1).mean()
+        df['J'] = 3 * df['K'] - 2 * df['D']
 
-    return df[['K', 'D', 'J']]
+        return df[['K', 'D', 'J']]
+    except Exception as e:
+        st.error(f"計算 KDJ 指標時出錯: {e}")
+        return pd.DataFrame()
 
 def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
     KBar_df['signal'] = 0
