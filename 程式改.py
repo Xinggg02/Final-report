@@ -190,8 +190,8 @@ if selected_stocks:
                 ###### (8) 畫圖 ######
                 st.subheader("畫圖")
 
-                ##### K線圖, 移動平均線 MA, 布林通道和唐奇安通道
-                with st.expander(f"{selected_stock} - K線圖, 移動平均線, 布林通道和唐奇安通道"):
+                ##### K線圖, 移動平均線 MA 和布林通道
+                with st.expander(f"{selected_stock} - K線圖, 移動平均線和布林通道"):
                     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -206,11 +206,27 @@ if selected_stocks:
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig1.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig1, use_container_width=True)
+
+                ##### K線圖, 唐奇安通道
+                with st.expander(f"{selected_stock} - K線圖和唐奇安通道"):
+                    fig4 = make_subplots(specs=[[{"secondary_y": True}]])
+
+                    #### include candlestick with rangeselector
+                    fig4.add_trace(go.Candlestick(x=KBar_df['Time'],
+                                    open=KBar_df['Open'], high=KBar_df['High'],
+                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
+                                   secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
+
+                    #### include a go.Bar trace for volumes
+                    fig4.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
+
+                    fig4.layout.yaxis2.showgrid = True
+                    st.plotly_chart(fig4, use_container_width=True)
 
                 ##### K線圖, RSI
                 with st.expander(f"{selected_stock} - K線圖, 長短 RSI"):
