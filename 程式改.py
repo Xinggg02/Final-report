@@ -11,7 +11,7 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background-color:#4CAF50;padding:15px;border-radius:15px">
+<div style="background-color:#4CAF50;padding:15px;border-radius:10px">
     <h1 style="color:#FFFFFF;text-align:center;font-size:36px;">金融大數據期末APP-股票資料呈現</h1>
     <h2 style="color:#FFFFFF;text-align:center;font-size:28px;">Final-report</h2>
 </div>
