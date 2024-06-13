@@ -187,8 +187,8 @@ if selected_stocks:
                 KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPPeriod).max()
                 KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPPeriod).min()
 
-                ###### (8) 畫圖 ######
-                st.subheader("畫圖")
+                ###### (8) 圖表 ######
+                st.subheader("圖表")
 
                 ##### K線圖和移動平均線
                 with st.expander(f"{selected_stock} - K線圖和移動平均線"):
