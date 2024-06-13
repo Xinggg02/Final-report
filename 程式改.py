@@ -209,7 +209,7 @@ if selected_stocks:
                     st.plotly_chart(fig1, use_container_width=True)
 
                 ##### 布林通道圖
-                with st.expander(f"{selected_stock} - 布林通道圖"):
+                with st.expander(f"{selected_stock} - K線圖和布林通道圖"):
                     fig2 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
