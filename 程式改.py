@@ -68,10 +68,6 @@ def calculate_obv(df):
     df['obv'] = obv
     return df['obv']
 
-# 使用修正後的calculate_obv函數
-KBar_df['OBV'] = calculate_obv(KBar_df)
-
-
 def calculate_kdj(df, period=9, k_period=3, d_period=3):
     low_list = df['low'].rolling(window=period).min()
     high_list = df['high'].rolling(window=period).max()
@@ -157,220 +153,50 @@ if selected_stocks:
                 KBar_volume_list = np.array(list(KBar_dic['volume'].values()))
                 KBar_dic['volume'] = KBar_volume_list
 
-                KBar_amount_list = np.array(list(KBar_dic['amount'].values()))
-                KBar_dic['amount'] = KBar_amount_list
-
-                ######  (3) 改變 KBar 時間長度  ########
-
-                Date = start_date.strftime("%Y-%m-%d")
-
-                st.subheader("設定一根 K 棒的時間長度(天數)")
-                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
-                cycle_duration = int(cycle_duration)
-
-                KBar = indicator_forKBar_short.KBar(Date, cycle_duration)  # 設定 cycle_duration 可以改成你想要的 KBar 週期
-
-                for i in range(KBar_dic['time'].size):
-                    time = KBar_dic['time'][i]
-                    open_price = KBar_dic['open'][i]
-                    close_price = KBar_dic['close'][i]
-                    low_price = KBar_dic['low'][i]
-                    high_price = KBar_dic['high'][i]
-                    qty = KBar_dic['volume'][i]
-                    amount = KBar_dic['amount'][i]
-
-                    KBar.AddPrice(time, open_price, close_price, low_price, high_price, qty)
-
-                KBar_dic = {}
-
-                # 形成 KBar 字典 (新週期的):
-                KBar_dic['time'] = KBar.TAKBar['time']
-                KBar_dic['product'] = np.repeat(selected_stock, KBar_dic['time'].size)
-                KBar_dic['open'] = KBar.TAKBar['open']
-                KBar_dic['high'] = KBar.TAKBar['high']
-                KBar_dic['low'] = KBar.TAKBar['low']
-                KBar_dic['close'] = KBar.TAKBar['close']
-                KBar_dic['volume'] = KBar.TAKBar['volume']
-
                 KBar_df = pd.DataFrame(KBar_dic)
+                KBar_df['time'] = pd.to_datetime(KBar_df['time'])
 
-                # 打印列名調試
-                st.write("DataFrame columns:", KBar_df.columns)
+                ###### (3) 計算策略 ######
+                # 定義長短期移動平均線周期
+                LongMAPeriod = 90
+                ShortMAPeriod = 10
+                TradeVolume = 1000
 
-                # 確保所有列名都是正確的
-                if 'close' not in KBar_df.columns:
-                    KBar_df.rename(columns={'Close': 'close'}, inplace=True)
-                if 'open' not in KBar_df.columns:
-                    KBar_df.rename(columns={'Open': 'open'}, inplace=True)
-                if 'high' not in KBar_df.columns:
-                    KBar_df.rename(columns={'High': 'high'}, inplace=True)
-                if 'low' not in KBar_df.columns:
-                    KBar_df.rename(columns={'Low': 'low'}, inplace=True)
-                if 'volume' not in KBar_df.columns:
-                    KBar_df.rename(columns={'Volume': 'volume'}, inplace=True)
-
-                #####  (i) 移動平均線策略   #####
-                ####  設定長短移動平均線的 K棒 長度:
-                st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 10)")
-                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 10, key=f"LongMAPeriod_{index}")
-                st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目(整數, 例如 2)")
-                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{index}")
-
-                #### 計算長短移動平均線
                 KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
                 KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
-
-                #### 尋找最後 NAN值的位置
-                last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
-
-                #####  (ii) RSI 策略   #####
-                #### 順勢策略
-                ### 設定長短 RSI 的 K棒 長度:
-                st.subheader(f"{selected_stock} - 設定計算長RSI的 K 棒數目(整數, 例如 10)")
-                LongRSIPeriod = st.slider('選擇一個整數', 0, 1000, 10, key=f"LongRSIPeriod_{index}")
-                st.subheader(f"{selected_stock} - 設定計算短RSI的 K 棒數目(整數, 例如 2)")
-                ShortRSIPeriod = st.slider('選擇一個整數', 0, 1000, 2, key=f"ShortRSIPeriod_{index}")
-
-                ### 計算 RSI指標長短線, 以及定義中線
-                KBar_df['RSI_long'] = calculate_rsi(KBar_df, LongRSIPeriod)
-                KBar_df['RSI_short'] = calculate_rsi(KBar_df, ShortRSIPeriod)
-                KBar_df['RSI_Middle'] = np.array([50] * len(KBar_dic['time']))
-
-                ### 尋找最後 NAN值的位置
-                last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
-
-                #####  (iii) OBV 計算  #####
+                KBar_df['RSI'] = calculate_rsi(KBar_df)
                 KBar_df['OBV'] = calculate_obv(KBar_df)
+                KDJ_df = calculate_kdj(KBar_df)
 
-                #####  (iv) KDJ 計算  #####
-                KDJ = calculate_kdj(KBar_df)
-                KBar_df = pd.concat([KBar_df, KDJ], axis=1)
+                for column in KDJ_df.columns:
+                    KBar_df[column] = KDJ_df[column]
 
-                ###### (5) 將 Dataframe 欄位名稱轉換  ######
-                KBar_df.columns = [i[0].upper() + i[1:] for i in KBar_df.columns]
-
-                ###### (6) 增加Bollinger Bands ######
-                st.subheader(f"{selected_stock} - 設定計算布林通道(Bollinger Bands)的 K 棒數目(整數, 例如 20)")
-                BBPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"BBPeriod_{index}")
-                KBar_df['MA'] = KBar_df['Close'].rolling(window=BBPeriod).mean()
-                KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
-                KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
-
-                ###### (7) 增加唐奇安通道 ######
-                st.subheader(f"{selected_stock} - 設定計算唐奇安通道(Donchian Channels)的 K 棒數目(整數, 例如 20)")
-                DCPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"DCPeriod_{index}")
-                KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPeriod).max()
-                KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPeriod).min()
-
-                ###### (8) 增加程式交易策略 ######
-                st.subheader("程式交易:")
-                strategy = st.selectbox("選擇交易策略", ["移動平均線黃金交叉做多，死亡交叉做空，<出場>結算平倉(期貨)，移動停損"])
-                
-                st.subheader(f"{selected_stock} - 設定策略參數")
-                TradeVolume = st.slider('設置交易每次購買量', 1, 1000, 100, key=f"TradeVolume_{index}")
-
-                # 計算策略結果
                 trade_results = backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume)
 
-                ###### (9) 畫圖 ######
-                st.subheader("畫圖")
+                st.subheader(f"{selected_stock} 交易績效")
+                st.write(pd.DataFrame([trade_results]))
 
-                ##### K線圖和移動平均線 #####
-                with st.expander(f"{selected_stock} - K線圖和移動平均線"):
-                    fig1 = make_subplots(specs=[[{"secondary_y": True}]])
+                ###### (4) 繪圖 ######
+                fig = make_subplots(rows=4, cols=1, shared_xaxes=True,
+                                    vertical_spacing=0.02, subplot_titles=(selected_stock, 'RSI', 'OBV', 'KDJ'),
+                                    row_width=[0.2, 0.2, 0.2, 0.2])
 
-                    #### include candlestick with rangeselector
-                    fig1.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                    open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)
+                fig.add_trace(go.Candlestick(x=KBar_df['time'], open=KBar_df['open'], high=KBar_df['high'],
+                                             low=KBar_df['low'], close=KBar_df['close'], name='Candlestick'), row=1, col=1)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['MA_long'], mode='lines', name='MA_long'), row=1, col=1)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['MA_short'], mode='lines', name='MA_short'), row=1, col=1)
 
-                    #### include a go.Bar trace for volumes
-                    fig1.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
-                    fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['RSI'], mode='lines', name='RSI'), row=2, col=1)
+                fig.add_trace(go.Bar(x=KBar_df['time'], y=KBar_df['volume'], name='Volume'), row=1, col=1)
 
-                    fig1.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig1, use_container_width=True)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['OBV'], mode='lines', name='OBV'), row=3, col=1)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['K'], mode='lines', name='K'), row=4, col=1)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['D'], mode='lines', name='D'), row=4, col=1)
+                fig.add_trace(go.Scatter(x=KBar_df['time'], y=KBar_df['J'], mode='lines', name='J'), row=4, col=1)
 
-                ##### K線圖和布林通道 #####
-                with st.expander(f"{selected_stock} - K線圖和布林通道"):
-                    fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    #### include candlestick with rangeselector
-                    fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                    open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)
-
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
-
-                    fig2.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig2, use_container_width=True)
-
-                ##### K線圖和唐奇安通道 #####
-                with st.expander(f"{selected_stock} - K線圖和唐奇安通道"):
-                    fig3 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    #### include candlestick with rangeselector
-                    fig3.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                    open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)
-
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
-
-                    fig3.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig3, use_container_width=True)
-
-                ##### 長短RSI #####
-                with st.expander(f"{selected_stock} - 長短RSI"):
-                    fig4 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-
-                    fig4.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig4, use_container_width=True)
-
-                ##### OBV 圖 #####
-                with st.expander(f"{selected_stock} - OBV 圖"):
-                    fig5 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    fig5.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['OBV'], mode='lines', line=dict(color='blue', width=2), name='OBV'))
-
-                    fig5.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig5, use_container_width=True)
-
-                ##### KDJ 圖 #####
-                with st.expander(f"{selected_stock} - KDJ 圖"):
-                    fig6 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['K'], mode='lines', line=dict(color='blue', width=2), name='K'))
-                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['D'], mode='lines', line=dict(color='red', width=2), name='D'))
-                    fig6.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['J'], mode='lines', line=dict(color='green', width=2), name='J'))
-
-                    fig6.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig6, use_container_width=True)
-
-                ##### 程式交易結果 #####
-                with st.expander(f"{selected_stock} - 程式交易結果"):
-                    trade_results_df = pd.DataFrame(list(trade_results.items()), columns=['項目', '數值'])
-                    st.table(trade_results_df)
-
-                ##### 基本信息展示 #####
-                with st.expander(f"{selected_stock} - 股票基本信息"):
-                    stock_info = twstock.codes.get(stock_id, None)
-                    if stock_info:
-                        st.write(f"公司名稱: {stock_info.name}")
-                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
-                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
-                    else:
-                        st.write("找不到該股票的詳細信息。")
-
-            except FileNotFoundError as e:
-                st.error(f"Error: {e}")
+                fig.update_layout(xaxis_rangeslider_visible=False)
+                st.plotly_chart(fig)
+            except Exception as e:
+                st.error(f"處理 {selected_stock} 時出錯: {e}")
 else:
-    st.error("請選擇至少一個股票。")
+    st.write("請選擇至少一支股票來顯示資料。")
