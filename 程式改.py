@@ -214,7 +214,7 @@ if selected_stocks:
                 KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
-                last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
+                last_nan_index_MA = KBar_df['MA_long'][::-1].isna().idxmax()
 
                 #####  (ii) RSI 策略   #####
                 #### 順勢策略
@@ -230,7 +230,7 @@ if selected_stocks:
                 KBar_df['RSI_Middle'] = np.array([50] * len(KBar_dic['time']))
 
                 ### 尋找最後 NAN值的位置
-                last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
+                last_nan_index_RSI = KBar_df['RSI_long'][::-1].isna().idxmax()
 
                 #####  (iii) OBV 計算  #####
                 KBar_df['OBV'] = calculate_obv(KBar_df)
