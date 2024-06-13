@@ -58,7 +58,10 @@ def calculate_rsi(df, period=14):
 
 def calculate_obv(df):
     df['obv'] = 0
-    df['obv'][1:] = np.where(df['close'][1:] > df['close'][:-1], df['volume'][1:], -df['volume'][1:])
+    obv_values = np.where(df['close'].iloc[1:].values > df['close'].iloc[:-1].values, 
+                          df['volume'].iloc[1:].values, 
+                          -df['volume'].iloc[1:].values)
+    df['obv'].iloc[1:] = obv_values
     df['obv'] = df['obv'].cumsum()
     return df['obv']
 
