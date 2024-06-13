@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  8 17:10:06 2024
-
-@author: 三隻小熊跑得快
-"""
-
 import os
 import numpy as np
 import datetime
@@ -24,7 +17,7 @@ html_temp = """
     <h2 style="color:white;text-align:center;">Final-report </h2>
     </div>
     """
-stc.html(html_temp)
+stc.html(html_temp, unsafe_allow_html=True)
 
 # 定義一個函數來取得股票代碼和名稱
 @st.cache_data
@@ -42,7 +35,7 @@ def load_stock_data(stock_ids):
     return stock_dict
 
 # 股票代碼列表
-stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', '2609', '2615','1216','1210','1201','1303','1301','1102','1101','3443','3055','2451','2891','2890','2881','2880','2882']
+stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', '2609', '2615', '1216', '1210', '1201', '1303', '1301', '1102', '1101', '3443', '3055', '2451', '2891', '2890', '2881', '2880', '2882']
 stock_dict = load_stock_data(stock_ids)
 
 # 生成股票選擇列表
