@@ -27,7 +27,7 @@ def load_stock_data(stock_ids):
         real = twstock.realtime.get(stock_id)
         name = real['info']['name'] if real['success'] else stock_id
         file_name = f"({stock_id})2019_2024.xlsx"
-        if os.path.exists(file_name)):
+        if os.path.exists(file_name):
             stock_dict[name] = (file_name, stock_id)
         else:
             st.warning(f"找不到文件: {file_name}")
