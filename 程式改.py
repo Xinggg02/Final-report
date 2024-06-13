@@ -288,12 +288,15 @@ else:
     st.error("請選擇至少一個股票。")
 
 # 增加一些額外的統計數據
-with st.expander("額外統計數據"):
+st.subheader("額外統計數據")
+stat_option = st.selectbox("選擇要查看的統計數據", ["", "總成交量", "總成交額"])
+
+if stat_option:
     for stock_name, (file_path, stock_id) in stock_dict.items():
         df = load_excel_data(file_path)
-        total_volume = df['volume'].sum()
-        total_amount = df['amount'].sum()
-        st.write(f"{stock_name} (代碼: {stock_id})")
-        st.write(f"總成交量: {total_volume}")
-        st.write(f"總成交額: {total_amount}")
-        st.write("---")
+        if stat_option == "總成交量":
+            total_volume = df['volume'].sum()
+            st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total_volume}")
+        elif stat_option == "總成交額":
+            total_amount = df['amount'].sum()
+            st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
