@@ -77,11 +77,7 @@ def calculate_kdj(df, period=9, k_period=3, d_period=3):
     return df[['K', 'D', 'J']]
 
 def backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume):
-    KBar_df['signal'] = 0
-    KBar_df['signal'][ShortMAPeriod:] = np.where(
-        KBar_df['MA_short'][ShortMAPeriod:] > KBar_df['MA_long'][ShortMAPeriod:], 1, -1)
-    KBar_df['position'] = KBar_df['signal'].shift()
-    
+    st.write("Columns in KBar_df before backtest_strategy:", KBar_df.columns)
     KBar_df['returns'] = KBar_df['close'].pct_change()
     KBar_df['strategy'] = KBar_df['returns'] * KBar_df['position']
     
@@ -188,7 +184,7 @@ if selected_stocks:
                 KBar_df = pd.DataFrame(KBar_dic)
 
                 # 打印列名調試
-                st.write("DataFrame columns:", KBar_df.columns)
+                st.write("DataFrame columns before renaming:", KBar_df.columns)
 
                 # 確保所有列名都是正確的
                 if 'close' not in KBar_df.columns:
@@ -201,6 +197,8 @@ if selected_stocks:
                     KBar_df.rename(columns={'Low': 'low'}, inplace=True)
                 if 'volume' not in KBar_df.columns:
                     KBar_df.rename(columns={'Volume': 'volume'}, inplace=True)
+
+                st.write("DataFrame columns after renaming:", KBar_df.columns)
 
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
@@ -261,6 +259,10 @@ if selected_stocks:
                 
                 st.subheader(f"{selected_stock} - 設定策略參數")
                 TradeVolume = st.slider('設置交易每次購買量', 1, 1000, 100, key=f"TradeVolume_{index}")
+
+                # 確保 `position` 列存在
+                KBar_df['position'] = KBar_df['MA_short'] > KBar_df['MA_long']
+                KBar_df['position'] = KBar_df['position'].shift()
 
                 # 計算策略結果
                 trade_results = backtest_strategy(KBar_df, LongMAPeriod, ShortMAPeriod, TradeVolume)
