@@ -228,7 +228,7 @@ if selected_stocks:
                     fig4.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig4, use_container_width=True)
 
-                ##### K線圖, RSI
+                ##### K線圖, 長短 RSI
                 with st.expander(f"{selected_stock} - K線圖, 長短 RSI"):
                     fig2 = make_subplots(specs=[[{"secondary_y": True}]])
 
