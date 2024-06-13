@@ -11,9 +11,9 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background-color:#4CAF50;padding:15px;border-radius:15px;width:50%;margin:auto;">
-    <h1 style="color:#FFFFFF;text-align:center;font-size:24px;">股票資料呈現</h1>
-    <h2 style="color:#FFFFFF;text-align:center;font-size:18px;">Final-report</h2>
+<div style="background-color:#4CAF50;padding:15px;border-radius:15px">
+    <h1 style="color:#FFFFFF;text-align:center;font-size:36px;">股票資料呈現</h1>
+    <h2 style="color:#FFFFFF;text-align:center;font-size:28px;">Final-report</h2>
 </div>
 """
 st.markdown(html_temp, unsafe_allow_html=True)
