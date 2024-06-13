@@ -290,13 +290,16 @@ else:
 # 增加一些額外的統計數據
 st.subheader("額外統計數據")
 stat_option = st.selectbox("選擇要查看的統計數據", ["", "總成交量", "總成交額"])
+selected_stat_stocks = st.multiselect("選擇要查看統計數據的股票", list(stock_dict.keys()))
 
-if stat_option:
-    for stock_name, (file_path, stock_id) in stock_dict.items():
-        df = load_excel_data(file_path)
-        if stat_option == "總成交量":
-            total_volume = df['volume'].sum()
-            st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total_volume}")
-        elif stat_option == "總成交額":
-            total_amount = df['amount'].sum()
-            st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
+if stat_option and selected_stat_stocks:
+    for stock_name in selected_stat_stocks:
+        if stock_name in stock_dict:
+            file_path, stock_id = stock_dict[stock_name]
+            df = load_excel_data(file_path)
+            if stat_option == "總成交量":
+                total_volume = df['volume'].sum()
+                st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total_volume}")
+            elif stat_option == "總成交額":
+                total_amount = df['amount'].sum()
+                st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
