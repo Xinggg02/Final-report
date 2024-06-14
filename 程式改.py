@@ -63,8 +63,8 @@ if selected_stocks:
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
                 ##### 選擇K棒時間範圍 #####
-                st.subheader("選擇K棒的時間範圍")
-                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
+                with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
+                    kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
 
                 if kbar_duration == "日":
                     resample_period = 'D'
