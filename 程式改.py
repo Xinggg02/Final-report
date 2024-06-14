@@ -54,10 +54,10 @@ if selected_stocks:
                 file_path, stock_id = stock_dict[selected_stock]
                 df_original = load_excel_data(file_path)
                 
-                ##### 選擇資料區間
-                st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
-                start_date = st.date_input(f'選擇開始日期', datetime.date(2019, 1, 1), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"start_date_{index}")
-                end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
+                ##### 選擇資料區間 #####
+                with st.expander(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31"):
+                    start_date = st.date_input(f'選擇開始日期', datetime.date(2019, 1, 1), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"start_date_{index}")
+                    end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
                 start_date = datetime.datetime.combine(start_date, datetime.time.min)
                 end_date = datetime.datetime.combine(end_date, datetime.time.min)
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
