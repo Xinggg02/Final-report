@@ -1,28 +1,3 @@
-import streamlit as st
-import streamlit_pages as st_pages
-
-st.set_page_config(page_title="金融大數據期末APP", layout="wide")
-
-st_pages.create_side_menu(
-    menu_title="目錄",
-    pages=[
-        {"title": "首頁", "icon": "🏠", "file": "main.py"},
-        {"title": "股票分析", "icon": "📈", "file": "stock_analysis.py"},
-        {"title": "統計數據", "icon": "📊", "file": "statistics.py"}
-    ]
-)
-
-###### (1) 開始設定 ######
-html_temp = """
-<div style="background-color:#4CAF50;padding:15px;border-radius:15px">
-    <h1 style="color:#FFFFFF;text-align:center;font-size:36px;">金融大數據期末APP-股票資料呈現</h1>
-    <h2 style="color:#FFFFFF;text-align:center;font-size:28px;">Final-report</h2>
-</div>
-"""
-st.markdown(html_temp, unsafe_allow_html=True)
-
-st.write("歡迎來到金融大數據期末APP，請選擇左側菜單進行操作。")
-
 import os
 import numpy as np
 import datetime
@@ -34,7 +9,14 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import twstock
 
-st.set_page_config(page_title="股票分析", layout="wide")
+###### (1) 開始設定 ######
+html_temp = """
+<div style="background-color:#4CAF50;padding:15px;border-radius:15px">
+    <h1 style="color:#FFFFFF;text-align:center;font-size:36px;">金融大數據期末APP-股票資料呈現</h1>
+    <h2 style="color:#FFFFFF;text-align:center;font-size:28px;">Final-report</h2>
+</div>
+"""
+st.markdown(html_temp, unsafe_allow_html=True)
 
 # 定義一個函數來取得股票代碼和名稱
 @st.cache_data
@@ -268,7 +250,7 @@ if selected_stocks:
                     #### include candlestick with rangeselector
                     fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar.df['Low'], close=KBar_df['Close'], name='K線'),
+                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
                                    secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
 
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
@@ -284,13 +266,13 @@ if selected_stocks:
                     #### include candlestick with rangeselector
                     fig4.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar.df['Low'], close=KBar.df['Close'], name='K線'),
+                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
                                    secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
 
                     #### include a go.Bar trace for volumes
-                    fig4.add_trace(go.Bar(x=KBar_df['Time'], y=KBar.df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
+                    fig4.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
                     fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last_nan_index_MA+1:], mode='lines', line.dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig4.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig4, use_container_width=True)
@@ -299,8 +281,8 @@ if selected_stocks:
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar.df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_RSI+1:], y=KBar.df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
@@ -312,50 +294,35 @@ if selected_stocks:
                     macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
                     macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{index}")
 
-                    KBar_df['EMA_fast'] = KBar.df['Close'].ewm(span=macd_fast, adjust=False).mean()
-                    KBar.df['EMA_slow'] = KBar.df['Close'].ewm(span=macd_slow, adjust=False).mean()
-                    KBar.df['MACD'] = KBar.df['EMA_fast'] - KBar.df['EMA_slow']
-                    KBar.df['MACD_signal'] = KBar.df['MACD'].ewm(span=macd_signal, adjust=False).mean()
-                    KBar.df['MACD_hist'] = KBar.df['MACD'] - KBar.df['MACD_signal']
+                    KBar_df['EMA_fast'] = KBar_df['Close'].ewm(span=macd_fast, adjust=False).mean()
+                    KBar_df['EMA_slow'] = KBar_df['Close'].ewm(span=macd_slow, adjust=False).mean()
+                    KBar_df['MACD'] = KBar_df['EMA_fast'] - KBar_df['EMA_slow']
+                    KBar_df['MACD_signal'] = KBar_df['MACD'].ewm(span=macd_signal, adjust=False).mean()
+                    KBar_df['MACD_hist'] = KBar_df['MACD'] - KBar_df['MACD_signal']
 
                     fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1)
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD_signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
-                    fig3.add_trace(go.Bar(x=KBar.df['Time'], y=KBar.df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD_signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
+                    fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
 
                     st.plotly_chart(fig3, use_container_width=True)
 
+                ##### 基本信息展示 #####
+                with st.expander(f"{selected_stock} - 股票基本信息"):
+                    stock_info = twstock.codes.get(stock_id, None)
+                    if stock_info:
+                        st.write(f"公司名稱: {stock_info.name}")
+                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
+                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
+                    else:
+                        st.write("找不到該股票的詳細信息。")
 
-import streamlit as st
-import pandas as pd
-import twstock
+            except FileNotFoundError as e:
+                st.error(f"Error: {e}")
+else:
+    st.error("請選擇至少一個股票。")
 
-st.set_page_config(page_title="統計數據", layout="wide")
-
-@st.cache_data
-def load_excel_data(file_path):
-    df = pd.read_excel(file_path)
-    df = df.drop('Unnamed: 0', axis=1)
-    df['time'] = pd.to_datetime(df['time'])
-    return df
-
-@st.cache_data
-def load_stock_data(stock_ids):
-    stock_dict = {}
-    for stock_id in stock_ids:
-        stock = twstock.Stock(stock_id)
-        real = twstock.realtime.get(stock_id)
-        name = real['info']['name'] if real['success'] else stock_id
-        file_name = f"({stock_id})2019_2024.xlsx"
-        if os.path.exists(file_name):
-            stock_dict[name] = (file_name, stock_id)
-        else:
-            st.warning(f"找不到文件: {file_name}")
-    return stock_dict
-
-stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', '2609', '2615', '1216', '1210', '1201', '1303', '1301', '1102', '1101', '3443', '3055', '2451', '2891', '2890', '2881', '2880', '2882']
-stock_dict = load_stock_data(stock_ids)
-
+# 增加一些額外的統計數據
 st.subheader("額外統計數據")
 stat_option = st.selectbox("選擇要查看的統計數據", ["", "總成交量", "總成交額"])
 selected_stat_stocks = st.multiselect("選擇要查看統計數據的股票", list(stock_dict.keys()))
