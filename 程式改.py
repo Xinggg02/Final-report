@@ -64,7 +64,7 @@ if selected_stocks:
 
                 ##### 選擇K棒時間範圍 #####
                 st.subheader("選擇K棒的時間範圍")
-                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月", "年"], key=f"kbar_duration_{index}")
+                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
 
                 if kbar_duration == "日":
                     resample_period = 'D'
@@ -72,8 +72,6 @@ if selected_stocks:
                     resample_period = 'W'
                 elif kbar_duration == "月":
                     resample_period = 'M'
-                elif kbar_duration == "年":
-                    resample_period = 'Y'
 
                 df = df.resample(resample_period, on='time').agg({
                     'open': 'first',
@@ -301,12 +299,6 @@ if selected_stocks:
                     else:
                         st.write("找不到該股票的詳細信息。")
                     
-                ##### 下載數據按鈕 #####
-                st.download_button(
-                    label="下載處理後的數據",
-                    data=KBar_df.to_csv().encode('utf-8'),
-                    file_name=f"{selected_stock}_processed_data.csv",
-                    mime='text/csv'
                 )
 
             except FileNotFoundError as e:
