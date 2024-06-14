@@ -64,7 +64,7 @@ if selected_stocks:
 
                 ##### 選擇K棒時間範圍 #####
                 st.subheader("選擇K棒的時間範圍")
-                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
+                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月", "年"], key=f"kbar_duration_{index}")
 
                 if kbar_duration == "日":
                     resample_period = 'D'
@@ -72,6 +72,8 @@ if selected_stocks:
                     resample_period = 'W'
                 elif kbar_duration == "月":
                     resample_period = 'M'
+                elif kbar_duration == "年":
+                    resample_period = 'Y'
 
                 df = df.resample(resample_period, on='time').agg({
                     'open': 'first',
@@ -112,8 +114,8 @@ if selected_stocks:
 
                 Date = start_date.strftime("%Y-%m-%d")
 
-                st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度")
-                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(一日、一週、一月)', value=1, key=f"KBar_duration_{index}")
+                st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度(天數)")
+                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
                 cycle_duration = int(cycle_duration)
 
                 KBar = indicator_forKBar_short.KBar(Date, cycle_duration)  # 設定 cycle_duration 可以改成你想要的 KBar 週期
@@ -263,8 +265,8 @@ if selected_stocks:
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line.dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
