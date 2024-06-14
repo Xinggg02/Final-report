@@ -1,5 +1,5 @@
 import streamlit as st
-import st_pages
+import streamlit_pages as st_pages
 
 st.set_page_config(page_title="金融大數據期末APP", layout="wide")
 
@@ -268,7 +268,7 @@ if selected_stocks:
                     #### include candlestick with rangeselector
                     fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
+                                    low=KBar.df['Low'], close=KBar_df['Close'], name='K線'),
                                    secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
 
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
@@ -284,13 +284,13 @@ if selected_stocks:
                     #### include candlestick with rangeselector
                     fig4.add_trace(go.Candlestick(x=KBar_df['Time'],
                                     open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar.df['Low'], close=KBar_df['Close'], name='K線'),
+                                    low=KBar.df['Low'], close=KBar.df['Close'], name='K線'),
                                    secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
 
                     #### include a go.Bar trace for volumes
-                    fig4.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
+                    fig4.add_trace(go.Bar(x=KBar_df['Time'], y=KBar.df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
                     fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last_nan_index_MA+1:], mode='lines', line.dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig4.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig4, use_container_width=True)
@@ -299,8 +299,8 @@ if selected_stocks:
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar.df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar.df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_RSI+1:], y=KBar.df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
@@ -312,18 +312,19 @@ if selected_stocks:
                     macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
                     macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{index}")
 
-                    KBar_df['EMA_fast'] = KBar_df['Close'].ewm(span=macd_fast, adjust=False).mean()
-                    KBar_df['EMA_slow'] = KBar.df['Close'].ewm(span=macd_slow, adjust=False).mean()
-                    KBar_df['MACD'] = KBar_df['EMA_fast'] - KBar_df['EMA_slow']
-                    KBar_df['MACD_signal'] = KBar_df['MACD'].ewm(span=macd_signal, adjust=False).mean()
-                    KBar_df['MACD_hist'] = KBar_df['MACD'] - KBar_df['MACD_signal']
+                    KBar_df['EMA_fast'] = KBar.df['Close'].ewm(span=macd_fast, adjust=False).mean()
+                    KBar.df['EMA_slow'] = KBar.df['Close'].ewm(span=macd_slow, adjust=False).mean()
+                    KBar.df['MACD'] = KBar.df['EMA_fast'] - KBar.df['EMA_slow']
+                    KBar.df['MACD_signal'] = KBar.df['MACD'].ewm(span=macd_signal, adjust=False).mean()
+                    KBar.df['MACD_hist'] = KBar.df['MACD'] - KBar.df['MACD_signal']
 
                     fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar.df['MACD_signal'], mode='lines', line.dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
-                    fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD_signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
+                    fig3.add_trace(go.Bar(x=KBar.df['Time'], y=KBar.df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
 
                     st.plotly_chart(fig3, use_container_width=True)
+
 
 import streamlit as st
 import pandas as pd
@@ -370,5 +371,3 @@ if stat_option and selected_stat_stocks:
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
-
-
