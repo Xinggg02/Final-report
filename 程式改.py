@@ -56,9 +56,11 @@ if selected_stock:
             ##### 選擇資料區間 #####
             date_range = pd.date_range(start='2019-01-01', end='2024-05-31', freq='D')
             date_range_str = [date.strftime('%Y-%m-%d') for date in date_range]
-            selected_dates = st.selectbox(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31", date_range_str, index=(date_range_str.index('2019-01-01'), date_range_str.index('2024-05-31')))
 
-            start_date_str, end_date_str = selected_dates.split(' 至 ')
+            st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
+            start_date_str = st.selectbox('選擇開始日期', date_range_str, index=date_range_str.index('2019-01-01'))
+            end_date_str = st.selectbox('選擇結束日期', date_range_str, index=date_range_str.index('2024-05-31'))
+            
             start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
             end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
             df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
