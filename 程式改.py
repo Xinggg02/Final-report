@@ -189,9 +189,11 @@ if selected_stocks:
 
                 ###### (8) 圖表 ######
                 st.subheader("圖表")
+                
+                tabs = st.tabs(["K線圖和移動平均線", "K線圖和布林通道圖", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表"])
 
                 ##### K線圖和移動平均線
-                with st.expander(f"{selected_stock} - K線圖和移動平均線"):
+                with tabs[0]:
                     fig1 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -209,7 +211,7 @@ if selected_stocks:
                     st.plotly_chart(fig1, use_container_width=True)
 
                 ##### 布林通道圖
-                with st.expander(f"{selected_stock} - K線圖和布林通道圖"):
+                with tabs[1]:
                     fig2 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -225,7 +227,7 @@ if selected_stocks:
                     st.plotly_chart(fig2, use_container_width=True)
 
                 ##### K線圖, 唐奇安通道
-                with st.expander(f"{selected_stock} - K線圖和唐奇安通道"):
+                with tabs[2]:
                     fig4 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -243,7 +245,7 @@ if selected_stocks:
                     st.plotly_chart(fig4, use_container_width=True)
 
                 ##### 長短 RSI
-                with st.expander(f"{selected_stock} - 長短 RSI"):
+                with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
@@ -253,7 +255,7 @@ if selected_stocks:
                     st.plotly_chart(fig3, use_container_width=True)
 
                 ##### 增加MACD圖表 #####
-                with st.expander(f"{selected_stock} - MACD 圖表"):
+                with tabs[4]:
                     st.subheader("MACD 計算參數")
                     macd_fast = st.slider('MACD 快線週期', 1, 50, 12, key=f"macd_fast_{index}")
                     macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
@@ -281,6 +283,14 @@ if selected_stocks:
                         st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
                     else:
                         st.write("找不到該股票的詳細信息。")
+                    
+                ##### 下載數據按鈕 #####
+                st.download_button(
+                    label="下載處理後的數據",
+                    data=KBar_df.to_csv().encode('utf-8'),
+                    file_name=f"{selected_stock}_processed_data.csv",
+                    mime='text/csv'
+                )
 
             except FileNotFoundError as e:
                 st.error(f"Error: {e}")
