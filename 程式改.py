@@ -9,6 +9,20 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import twstock
 
+import streamlit as st
+import st_pages
+
+st.set_page_config(page_title="金融大數據期末APP", layout="wide")
+
+st_pages.create_side_menu(
+    menu_title="目錄",
+    pages=[
+        {"title": "首頁", "icon": "🏠", "file": "main.py"},
+        {"title": "股票分析", "icon": "📈", "file": "stock_analysis.py"},
+        {"title": "統計數據", "icon": "📊", "file": "statistics.py"}
+    ]
+)
+
 ###### (1) 開始設定 ######
 html_temp = """
 <div style="background-color:#4CAF50;padding:15px;border-radius:15px">
