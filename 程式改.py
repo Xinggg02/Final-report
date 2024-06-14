@@ -112,7 +112,7 @@ if selected_stocks:
 
                 Date = start_date.strftime("%Y-%m-%d")
 
-                st.subheader("設定一根 K 棒的時間長度(天數)")
+                st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度(天數)")
                 cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
                 cycle_duration = int(cycle_duration)
 
