@@ -65,33 +65,22 @@ if selected_stocks:
                 ##### 選擇K棒時間範圍 #####
                 st.subheader("選擇K棒的時間範圍")
                 kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
+
                 if kbar_duration == "日":
-                    df = df.resample('D', on='time').agg({
-                        'open': 'first',
-                        'high': 'max',
-                        'low': 'min',
-                        'close': 'last',
-                        'volume': 'sum',
-                        'amount': 'sum'
-                    }).dropna().reset_index()
+                    resample_period = 'D'
                 elif kbar_duration == "週":
-                    df = df.resample('W', on='time').agg({
-                        'open': 'first',
-                        'high': 'max',
-                        'low': 'min',
-                        'close': 'last',
-                        'volume': 'sum',
-                        'amount': 'sum'
-                    }).dropna().reset_index()
+                    resample_period = 'W'
                 elif kbar_duration == "月":
-                    df = df.resample('M', on='time').agg({
-                        'open': 'first',
-                        'high': 'max',
-                        'low': 'min',
-                        'close': 'last',
-                        'volume': 'sum',
-                        'amount': 'sum'
-                    }).dropna().reset_index()
+                    resample_period = 'M'
+
+                df = df.resample(resample_period, on='time').agg({
+                    'open': 'first',
+                    'high': 'max',
+                    'low': 'min',
+                    'close': 'last',
+                    'volume': 'sum',
+                    'amount': 'sum'
+                }).dropna().reset_index()
 
                 ###### (2) 轉化為字典 ######
                 KBar_dic = df.to_dict()
@@ -137,6 +126,11 @@ if selected_stocks:
                     high_price = KBar_dic['high'][i]
                     qty = KBar_dic['volume'][i]
                     amount = KBar_dic['amount'][i]
+
+                    # 添加调试信息
+                    if None in (time, open_price, close_price, low_price, high_price, qty):
+                        st.error(f"数据缺失：time={time}, open={open_price}, close={close_price}, low={low_price}, high={high_price}, volume={qty}")
+                        continue
 
                     KBar.AddPrice(time, open_price, close_price, low_price, high_price, qty)
 
