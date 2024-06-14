@@ -4,7 +4,6 @@ numpy
 streamlit
 streamlit_webrtc
 streamlit-nested-layout
-streamlit-pages
 matplotlib
 openpyxl
 plotly
