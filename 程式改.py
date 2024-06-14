@@ -55,14 +55,10 @@ if selected_stock:
             
             ##### 選擇資料區間 #####
             st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
-            date_range = pd.date_range(start='2019-01-01', end='2024-05-31', freq='D')
-            date_range_str = [date.strftime('%Y-%m-%d') for date in date_range]
-
-            start_date_str = st.selectbox('選擇開始日期', date_range_str, index=date_range_str.index('2019-01-01'))
-            end_date_str = st.selectbox('選擇結束日期', date_range_str, index=date_range_str.index('2024-05-31'))
-            
-            start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
-            end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+            start_date = st.date_input('選擇開始日期', datetime.date(2019, 1, 1), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31))
+            end_date = st.date_input('選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31))
+            start_date = datetime.datetime.combine(start_date, datetime.time.min)
+            end_date = datetime.datetime.combine(end_date, datetime.time.min)
             df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
             ##### 選擇K棒時間範圍 #####
