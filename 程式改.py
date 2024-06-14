@@ -54,10 +54,10 @@ if selected_stock:
             df_original = load_excel_data(file_path)
             
             ##### 選擇資料區間 #####
+            st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
             date_range = pd.date_range(start='2019-01-01', end='2024-05-31', freq='D')
             date_range_str = [date.strftime('%Y-%m-%d') for date in date_range]
 
-            st.subheader(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31")
             start_date_str = st.selectbox('選擇開始日期', date_range_str, index=date_range_str.index('2019-01-01'))
             end_date_str = st.selectbox('選擇結束日期', date_range_str, index=date_range_str.index('2024-05-31'))
             
