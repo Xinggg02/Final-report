@@ -298,8 +298,6 @@ if selected_stocks:
                         st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
                     else:
                         st.write("找不到該股票的詳細信息。")
-                    
-                )
 
             except FileNotFoundError as e:
                 st.error(f"Error: {e}")
