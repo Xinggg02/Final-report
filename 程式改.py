@@ -62,15 +62,36 @@ if selected_stocks:
                 end_date = datetime.datetime.combine(end_date, datetime.time.min)
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
-                # 重新采樣數據（例如，按周采樣）
-                df = df.resample('W', on='time').agg({
-                    'open': 'first',
-                    'high': 'max',
-                    'low': 'min',
-                    'close': 'last',
-                    'volume': 'sum',
-                    'amount': 'sum'
-                }).dropna().reset_index()
+                ##### 選擇K棒時間範圍 #####
+                st.subheader("選擇K棒的時間範圍")
+                kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
+                if kbar_duration == "日":
+                    df = df.resample('D', on='time').agg({
+                        'open': 'first',
+                        'high': 'max',
+                        'low': 'min',
+                        'close': 'last',
+                        'volume': 'sum',
+                        'amount': 'sum'
+                    }).dropna().reset_index()
+                elif kbar_duration == "週":
+                    df = df.resample('W', on='time').agg({
+                        'open': 'first',
+                        'high': 'max',
+                        'low': 'min',
+                        'close': 'last',
+                        'volume': 'sum',
+                        'amount': 'sum'
+                    }).dropna().reset_index()
+                elif kbar_duration == "月":
+                    df = df.resample('M', on='time').agg({
+                        'open': 'first',
+                        'high': 'max',
+                        'low': 'min',
+                        'close': 'last',
+                        'volume': 'sum',
+                        'amount': 'sum'
+                    }).dropna().reset_index()
 
                 ###### (2) 轉化為字典 ######
                 KBar_dic = df.to_dict()
