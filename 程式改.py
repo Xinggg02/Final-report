@@ -63,9 +63,9 @@ if selected_stocks:
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
                 ##### 選擇K棒時間範圍 #####
-                with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
+                with st.expander(f"<span style='font-size:24px;font-weight:normal;'>元大台灣50 - 選擇K棒的時間範圍</span>", unsafe_allow_html=True):
                     kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
-                    st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度(天數)")
+                    st.markdown(f"<span style='font-size:20px;font-weight:bold;'>設定一根 {kbar_duration} K 棒的時間長度(天數)</span>", unsafe_allow_html=True)
                     cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
 
                 if kbar_duration == "日":
