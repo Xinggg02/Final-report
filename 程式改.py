@@ -257,7 +257,7 @@ if selected_stocks:
                     fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last.nan.index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig4.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig4, use.container_width=True)
+                    st.plotly_chart(fig4, use_container_width=True)
 
                 ##### 長短 RSI
                 with tabs[3]:
