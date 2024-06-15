@@ -263,7 +263,7 @@ if selected_stocks:
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_long'][last.nan.index_RSI+1:], mode='lines', line.dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
                     fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_short'][last.nan.index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
