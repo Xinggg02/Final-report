@@ -65,7 +65,7 @@ if selected_stocks:
                 ##### 選擇K棒時間範圍 #####
                 with st.expander(f"元大台灣50 - 選擇K棒的時間範圍"):
                     kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
-                    st.markdown(f"<div style='font-size:20px;'>設定一根 {kbar_duration} K 棒的時間長度(天數)</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size:12px; font-weight:bold;'>輸入一根 K 棒的時間長度(單位:天, 一日=1天)</div>", unsafe_allow_html=True)
                     cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:日、週、月)', value=1, key=f"KBar_duration_{index}")
 
 
