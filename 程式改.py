@@ -60,7 +60,7 @@ if selected_stocks:
                     end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
                 start_date = datetime.datetime.combine(start_date, datetime.time.min)
                 end_date = datetime.datetime.combine(end_date, datetime.time.min)
-                df = df_original[(df_original['time'] >= start_date) & (df.original['time'] <= end_date)]
+                df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
                 ##### 選擇K棒時間範圍 #####
                 with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
@@ -253,18 +253,18 @@ if selected_stocks:
 
                     #### include a go.Bar trace for volumes
                     fig4.add_trace(go.Bar(x=KBar.df['Time'], y=KBar.df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
-                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_upper'][last_nan_index_MA+1:], mode='lines', line.dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last.nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_upper'][last.nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last.nan.index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig4.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig4, use_container_width=True)
+                    st.plotly_chart(fig4, use.container_width=True)
 
                 ##### 長短 RSI
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan_index_RSI+1:], y=KBar.df['RSI_long'][last.nan.index_RSI+1:], mode='lines', line.dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan_index_RSI+1:], y=KBar.df['RSI_short'][last.nan.index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_long'][last.nan.index_RSI+1:], mode='lines', line.dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_short'][last.nan.index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use.container_width=True)
@@ -279,7 +279,7 @@ if selected_stocks:
                     KBar.df['EMA_fast'] = KBar.df['Close'].ewm(span=macd_fast, adjust=False).mean()
                     KBar.df['EMA_slow'] = KBar.df['Close'].ewm(span=macd_slow, adjust=False).mean()
                     KBar.df['MACD'] = KBar.df['EMA_fast'] - KBar.df['EMA_slow']
-                    KBar.df['MACD_signal'] = KBar.df['MACD'].ewm(span=macd_signal, adjust=False).mean()
+                    KBar.df['MACD_signal'] = KBar.df['MACD'].ewm(span=macd.signal, adjust=False).mean()
                     KBar.df['MACD_hist'] = KBar.df['MACD'] - KBar.df['MACD_signal']
 
                     fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1)
@@ -309,14 +309,14 @@ st.subheader("額外統計數據")
 stat_option = st.selectbox("選擇要查看的統計數據", ["", "總成交量", "總成交額"])
 selected_stat_stocks = st.multiselect("選擇要查看統計數據的股票", list(stock_dict.keys()))
 
-if stat_option and selected_stat_stocks:
-    for stock_name in selected_stat_stocks:
-        if stock_name in stock_dict:
+if stat.option and selected_stat_stocks:
+    for stock_name in selected_stat.stocks:
+        if stock.name in stock_dict:
             file_path, stock_id = stock_dict[stock_name]
             df = load_excel_data(file_path)
-            if stat_option == "總成交量":
-                total_volume = df['volume'].sum()
-                st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total_volume}")
-            elif stat_option == "總成交額":
-                total_amount = df['amount'].sum()
-                st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
+            if stat.option == "總成交量":
+                total.volume = df['volume'].sum()
+                st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total.volume}")
+            elif stat.option == "總成交額":
+                total.amount = df['amount'].sum()
+                st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total.amount}")
