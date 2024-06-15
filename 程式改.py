@@ -65,6 +65,8 @@ if selected_stocks:
                 ##### 選擇K棒時間範圍 #####
                 with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
                     kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
+                    st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度(天數)")
+                    cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
 
                 if kbar_duration == "日":
                     resample_period = 'D'
@@ -112,8 +114,6 @@ if selected_stocks:
 
                 Date = start_date.strftime("%Y-%m-%d")
 
-                st.subheader(f"設定一根 {kbar_duration} K 棒的時間長度(天數)")
-                cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:天, 一日=1天)', value=1, key=f"KBar_duration_{index}")
                 cycle_duration = int(cycle_duration)
 
                 KBar = indicator_forKBar_short.KBar(Date, cycle_duration)  # 設定 cycle_duration 可以改成你想要的 KBar 週期
