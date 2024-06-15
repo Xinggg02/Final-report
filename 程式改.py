@@ -60,7 +60,7 @@ if selected_stocks:
                     end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
                 start_date = datetime.datetime.combine(start_date, datetime.time.min)
                 end_date = datetime.datetime.combine(end_date, datetime.time.min)
-                df = df_original[(df_original['time'] >= start_date) & (df.original['time'] <= end_date)]
+                df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
                 ##### 選擇K棒時間範圍 #####
                 with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
@@ -231,12 +231,12 @@ if selected_stocks:
 
                     #### include candlestick with rangeselector
                     fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                    open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar.df['Close'], name='K線'),
+                                    open=KBar_df['Open'], high=KBar.df['High'],
+                                    low=KBar.df['Low'], close=KBar.df['Close'], name='K線'),
                                    secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
 
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar.df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar.df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
+                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar.df['BB_lower'][last_nan_index_MA+1:], mode='lines', line.dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
 
                     fig2.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig2, use_container_width=True)
@@ -253,8 +253,8 @@ if selected_stocks:
 
                     #### include a go.Bar trace for volumes
                     fig4.add_trace(go.Bar(x=KBar.df['Time'], y=KBar.df['Volume'], name='成交量', marker=dict(color='black')), secondary_y=False)
-                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
-                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_upper'][last_nan_index_MA+1:], mode='lines', line.dict(color='green', width=2), name='唐奇安通道上軌'), secondary_y=True)
+                    fig4.add_trace(go.Scatter(x=KBar.df['Time'][last_nan_index_MA+1:], y=KBar.df['DC_lower'][last.nan_index_MA+1:], mode='lines', line.dict(color='red', width=2), name='唐奇安通道下軌'), secondary_y=True)
 
                     fig4.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig4, use_container_width=True)
@@ -263,8 +263,8 @@ if selected_stocks:
                 with tabs[3]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_long'][last.nan.index_RSI+1:], mode='lines', line.dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'][last.nan.index_RSI+1:], y=KBar.df['RSI_short'][last.nan.index_RSI+1:], mode='lines', line.dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
@@ -277,20 +277,20 @@ if selected_stocks:
                     macd_signal = st.slider('MACD 信號線週期', 1, 50, 9, key=f"macd_signal_{index}")
 
                     KBar_df['EMA_fast'] = KBar_df['Close'].ewm(span=macd_fast, adjust=False).mean()
-                    KBar_df['EMA_slow'] = KBar_df['Close'].ewm(span=macd_slow, adjust=False).mean()
-                    KBar_df['MACD'] = KBar_df['EMA_fast'] - KBar_df['EMA_slow']
-                    KBar_df['MACD_signal'] = KBar_df['MACD'].ewm(span=macd_signal, adjust=False).mean()
-                    KBar_df['MACD_hist'] = KBar_df['MACD'] - KBar_df['MACD_signal']
+                    KBar_df['EMA_slow'] = KBar.df['Close'].ewm(span=macd_slow, adjust=False).mean()
+                    KBar.df['MACD'] = KBar.df['EMA_fast'] - KBar.df['EMA_slow']
+                    KBar.df['MACD_signal'] = KBar.df['MACD'].ewm(span=macd.signal, adjust=False).mean()
+                    KBar.df['MACD_hist'] = KBar.df['MACD'] - KBar.df['MACD_signal']
 
                     fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD'], mode='lines', line=dict(color='blue', width=2), name='MACD'), row=1, col=1)
-                    fig3.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['MACD_signal'], mode='lines', line=dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
-                    fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD'], mode='lines', line.dict(color='blue', width=2), name='MACD'), row=1, col=1)
+                    fig3.add_trace(go.Scatter(x=KBar.df['Time'], y=KBar.df['MACD_signal'], mode='lines', line.dict(color='red', width=2), name='MACD 信號線'), row=1, col=1)
+                    fig3.add_trace(go.Bar(x=KBar.df['Time'], y=KBar.df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
 
                     st.plotly_chart(fig3, use_container_width=True)
 
                 ##### 基本信息展示 #####
-                with st.expander(f"{selected_stock} - 股票基本信息"):
+                with st.expander(f"{selected.stock} - 股票基本信息"):
                     stock_info = twstock.codes.get(stock_id, None)
                     if stock_info:
                         st.write(f"公司名稱: {stock_info.name}")
