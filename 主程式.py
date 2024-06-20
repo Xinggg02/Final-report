@@ -69,19 +69,6 @@ def calculate_rsi(df, period=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
-def detect_bollinger_bands(df, period=20):
-    df['MA'] = df['close'].rolling(window=period).mean()
-    df['BB_upper'] = df['MA'] + 2 * df['close'].rolling(window=period).std()
-    df['BB_lower'] = df['MA'] - 2 * df['close'].rolling(window=period).std()
-
-    signals = pd.DataFrame(index=df.index)
-    signals['signal'] = 0.0
-
-    signals['signal'] = np.where(df['close'] > df['BB_upper'], -1.0, np.where(df['close'] < df['BB_lower'], 1.0, 0.0))
-    signals['positions'] = signals['signal'].diff()
-
-    return signals
-
 def detect_rsi_signals(df, period=14, overbought=70, oversold=30):
     signals = pd.DataFrame(index=df.index)
     signals['RSI'] = calculate_rsi(df, period)
@@ -287,17 +274,6 @@ if selected_stocks:
                 ###### (5) 將 Dataframe 欄位名稱轉換  ######
                 KBar_df.columns = [i[0].upper() + i[1:] for i in KBar_df.columns]
 
-                ###### (6) 增加Bollinger Bands ######
-                st.subheader(f"{selected_stock} - 設定計算布林通道(Bollinger Bands)的 K 棒數目")
-                BBPeriod = st.slider('選擇一個整數', 10, 50, bb_default, key=f"BBPeriod_{index}")
-                KBar_df['MA'] = KBar_df['Close'].rolling(window=BBPeriod).mean()
-                KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
-                KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
-
-                bb_signals = detect_bollinger_bands(KBar_df, BBPeriod)
-                KBar_df['BB_Signal'] = bb_signals['signal']
-                KBar_df['BB_Positions'] = bb_signals['positions']
-
                 ###### (7) 增加唐奇安通道 ######
                 st.subheader(f"{selected_stock} - 設定計算唐奇安通道(Donchian Channels)的 K 棒數目")
                 DCPPeriod = st.slider('選擇一個整數', 10, 50, dc_default, key=f"DCPPeriod_{index}")
@@ -307,7 +283,7 @@ if selected_stocks:
                 ###### (8) 圖表 ######
                 st.subheader("圖表")
                 
-                tabs = st.tabs(["K線圖和移動平均線", "K線圖和布林通道圖", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表"])
+                tabs = st.tabs(["K線圖和移動平均線", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表"])
 
                 ##### K線圖和移動平均線
                 with tabs[0]:
@@ -333,29 +309,8 @@ if selected_stocks:
                     fig1.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig1, use_container_width=True)
 
-                ##### 布林通道圖
-                with tabs[1]:
-                    fig2 = make_subplots(specs=[[{"secondary_y": True}]])
-
-                    #### include candlestick with rangeselector
-                    fig2.add_trace(go.Candlestick(x=KBar_df['Time'],
-                                    open=KBar_df['Open'], high=KBar_df['High'],
-                                    low=KBar_df['Low'], close=KBar_df['Close'], name='K線'),
-                                   secondary_y=True)  # secondary_y=True 表示此圖形的y軸scale是在右邊而不是在左邊
-
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
-                    fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
-
-                    bb_buy_signals = KBar_df[KBar_df['BB_Positions'] == 1]
-                    bb_sell_signals = KBar_df[KBar_df['BB_Positions'] == -1]
-                    fig2.add_trace(go.Scatter(x=bb_buy_signals['Time'], y=bb_buy_signals['Close'], mode='markers', marker=dict(symbol='triangle-up', color='green', size=10), name='BB買入信號'))
-                    fig2.add_trace(go.Scatter(x=bb_sell_signals['Time'], y=bb_sell_signals['Close'], mode='markers', marker=dict(symbol='triangle-down', color='red', size=10), name='BB賣出信號'))
-
-                    fig2.layout.yaxis2.showgrid = True
-                    st.plotly_chart(fig2, use_container_width=True)
-
                 ##### K線圖, 唐奇安通道
-                with tabs[2]:
+                with tabs[1]:
                     fig4 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     #### include candlestick with rangeselector
@@ -373,7 +328,7 @@ if selected_stocks:
                     st.plotly_chart(fig4, use_container_width=True)
 
                 ##### 長短 RSI
-                with tabs[3]:
+                with tabs[2]:
                     fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
                     fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
@@ -388,7 +343,7 @@ if selected_stocks:
                     st.plotly_chart(fig3, use_container_width=True)
 
                 ##### 增加MACD圖表 #####
-                with tabs[4]:
+                with tabs[3]:
                     st.subheader("MACD 計算參數")
                     macd_fast = st.slider('MACD 快線週期', 1, 50, 12, key=f"macd_fast_{index}")
                     macd_slow = st.slider('MACD 慢線週期', 1, 50, 26, key=f"macd_slow_{index}")
