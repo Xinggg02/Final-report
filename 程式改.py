@@ -49,11 +49,11 @@ def detect_cross_signals(df, short_window, long_window):
     signals = pd.DataFrame(index=df.index)
     signals['signal'] = 0.0
 
-    signals['short_mavg'] = df['close'].rolling(window=short_window, min_periods=1, center=False).mean()
-    signals['long_mavg'] = df['close'].rolling(window=long_window, min_periods=1, center=False).mean()
+    signals['Short_Mavg'] = df['Close'].rolling(window=short_window, min_periods=1, center=False).mean()
+    signals['Long_Mavg'] = df['Close'].rolling(window=long_window, min_periods=1, center=False).mean()
 
     # Create signals
-    signals['signal'][short_window:] = np.where(signals['short_mavg'][short_window:] > signals['long_mavg'][short_window:], 1.0, 0.0)
+    signals['signal'][short_window:] = np.where(signals['Short_Mavg'][short_window:] > signals['Long_Mavg'][short_window:], 1.0, 0.0)
     
     # Generate trading orders
     signals['positions'] = signals['signal'].diff()
@@ -61,7 +61,7 @@ def detect_cross_signals(df, short_window, long_window):
     return signals
 
 def calculate_rsi(df, period=14):
-    delta = df['close'].diff()
+    delta = df['Close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
 
@@ -70,14 +70,14 @@ def calculate_rsi(df, period=14):
     return rsi
 
 def detect_bollinger_bands(df, period=20):
-    df['MA'] = df['close'].rolling(window=period).mean()
-    df['BB_upper'] = df['MA'] + 2 * df['close'].rolling(window=period).std()
-    df['BB_lower'] = df['MA'] - 2 * df['close'].rolling(window=period).std()
+    df['MA'] = df['Close'].rolling(window=period).mean()
+    df['BB_upper'] = df['MA'] + 2 * df['Close'].rolling(window=period).std()
+    df['BB_lower'] = df['MA'] - 2 * df['Close'].rolling(window=period).std()
 
     signals = pd.DataFrame(index=df.index)
     signals['signal'] = 0.0
 
-    signals['signal'] = np.where(df['close'] > df['BB_upper'], -1.0, np.where(df['close'] < df['BB_lower'], 1.0, 0.0))
+    signals['signal'] = np.where(df['Close'] > df['BB_upper'], -1.0, np.where(df['Close'] < df['BB_lower'], 1.0, 0.0))
     signals['positions'] = signals['signal'].diff()
 
     return signals
@@ -253,8 +253,8 @@ if selected_stocks:
                 ShortMAPeriod = st.slider('選擇一個整數', 5, 50, short_ma_default, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
-                KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
-                KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
+                KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
+                KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
