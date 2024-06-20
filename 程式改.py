@@ -63,10 +63,9 @@ if selected_stocks:
                 df = df_original[(df_original['time'] >= start_date) & (df_original['time'] <= end_date)]
 
                 ##### 選擇K棒時間範圍 #####
-                with st.expander(f"元大台灣50 - 選擇K棒的時間範圍"):
+                with st.expander(f"{selected_stock} - 選擇K棒的時間範圍"):
                     kbar_duration = st.selectbox("選擇K棒的時間範圍", ["日", "週", "月"], key=f"kbar_duration_{index}")
-                    cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:日、週、月)',value=1, key=f"KBar_duration_{index}")
-
+                    cycle_duration = st.number_input('輸入一根 K 棒的時間長度(單位:日、週、月)', value=1, key=f"KBar_duration_{index}")
 
                 if kbar_duration == "日":
                     resample_period = 'D'
@@ -150,9 +149,9 @@ if selected_stocks:
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 50)")
-                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 50, key=f"LongMAPeriod_{index}")
+                LongMAPeriod = st.slider('選擇一個整數', 10, 200, 50, key=f"LongMAPeriod_{index}")
                 st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目(整數, 例如 20)")
-                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"ShortMAPeriod_{index}")
+                ShortMAPeriod = st.slider('選擇一個整數', 5, 50, 20, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
                 KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
@@ -165,9 +164,9 @@ if selected_stocks:
                 #### 順勢策略
                 ### 設定長短 RSI 的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長RSI的 K 棒數目(整數, 例如 14)")
-                LongRSIPeriod = st.slider('選擇一個整數', 0, 100, 14, key=f"LongRSIPeriod_{index}")
+                LongRSIPeriod = st.slider('選擇一個整數', 10, 20, 14, key=f"LongRSIPeriod_{index}")
                 st.subheader(f"{selected_stock} - 設定計算短RSI的 K 棒數目(整數, 例如 7)")
-                ShortRSIPeriod = st.slider('選擇一個整數', 0, 100, 7, key=f"ShortRSIPeriod_{index}")
+                ShortRSIPeriod = st.slider('選擇一個整數', 5, 14, 7, key=f"ShortRSIPeriod_{index}")
 
                 ### 計算 RSI指標長短線, 以及定義中線
                 def calculate_rsi(df, period=14):
@@ -191,14 +190,14 @@ if selected_stocks:
 
                 ###### (6) 增加Bollinger Bands ######
                 st.subheader(f"{selected_stock} - 設定計算布林通道(Bollinger Bands)的 K 棒數目(整數, 例如 20)")
-                BBPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"BBPeriod_{index}")
+                BBPeriod = st.slider('選擇一個整數', 10, 50, 20, key=f"BBPeriod_{index}")
                 KBar_df['MA'] = KBar_df['Close'].rolling(window=BBPeriod).mean()
                 KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
                 KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
 
                 ###### (7) 增加唐奇安通道 ######
                 st.subheader(f"{selected_stock} - 設定計算唐奇安通道(Donchian Channels)的 K 棒數目(整數, 例如 20)")
-                DCPPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"DCPPeriod_{index}")
+                DCPPeriod = st.slider('選擇一個整數', 10, 50, 20, key=f"DCPPeriod_{index}")
                 KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPPeriod).max()
                 KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPPeriod).min()
 
