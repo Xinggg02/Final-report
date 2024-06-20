@@ -253,8 +253,8 @@ if selected_stocks:
                 ShortMAPeriod = st.slider('選擇一個整數', 5, 50, short_ma_default, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
-                KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
-                KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
+                KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
+                KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
