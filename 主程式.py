@@ -36,6 +36,7 @@ stock_ids = ['0050', '00878', '006208', '1215', '1225', '2303', '2454', '2603', 
 stock_dict = load_stock_data(stock_ids)
 
 # 生成股票選擇列表
+st.subheader(f"選擇股票")
 selected_stocks = st.multiselect("選擇股票", list(stock_dict.keys()), default=[list(stock_dict.keys())[0]])
 
 @st.cache_data
