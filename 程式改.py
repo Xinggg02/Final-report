@@ -342,4 +342,3 @@ if stat_option and selected_stat_stocks:
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
-還有特別或其他的內容可以加入
