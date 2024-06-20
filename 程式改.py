@@ -55,7 +55,7 @@ if selected_stocks:
                 df_original = load_excel_data(file_path)
                 
                 ##### 選擇資料區間 #####
-                with st.expander(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31"):
+                with st.expander(f"{selected_stock} - 選擇開始與結束的日期, 卻間:2019-01-01 至 2024-05-31"):
                     start_date = st.date_input(f'選擇開始日期', datetime.date(2019, 1, 1), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"start_date_{index}")
                     end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
                 start_date = datetime.datetime.combine(start_date, datetime.time.min)
@@ -163,6 +163,13 @@ if selected_stocks:
                 KBar_dic['volume'] = KBar.TAKBar['volume']
 
                 KBar_df = pd.DataFrame(KBar_dic)
+
+                # 確保所有必要的列存在於DataFrame中
+                required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
+                for col in required_columns:
+                    if col not in KBar_df.columns:
+                        st.error(f"缺少必要的列：{col}")
+                        continue
 
                   ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
@@ -360,9 +367,15 @@ if selected_stocks:
                                 'amount': 'sum'
                             }).dropna().reset_index()
 
+                            # 確保所有必要的列存在於DataFrame中
+                            for col in required_columns:
+                                if col not in df.columns:
+                                    st.error(f"缺少必要的列：{col}")
+                                    continue
+
                             # 計算技術指標
-                            df['MA_long'] = df['close'].rolling(window=LongMAPeriod).mean()
-                            df['MA_short'] = df['close'].rolling(window=ShortMAPeriod).mean()
+                            df['MA_long'] = df['Close'].rolling(window=LongMAPeriod).mean()
+                            df['MA_short'] = df['Close'].rolling(window=ShortMAPeriod).mean()
                             df['RSI'] = calculate_rsi(df, LongRSIPeriod)
 
                             # 簡單交易策略
