@@ -19,10 +19,21 @@ html_temp = """
                 opacity: 1;
             }
         }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         .title {
             font-family: 'Arial Black', Gadget, sans-serif;
             color: #fff;
             text-align: center;
+            animation: fadeInUp 3s ease-in;
         }
         .icon {
             width: 50px;
@@ -40,16 +51,6 @@ html_temp = """
             font-size: 28px;
             font-family: 'Arial', Helvetica, sans-serif;
             animation: fadeInUp 3s ease-in;
-        }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
     </style>
     <div style="display: flex; align-items: center; justify-content: center;">
