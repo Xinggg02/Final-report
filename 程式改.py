@@ -164,13 +164,6 @@ if selected_stocks:
 
                 KBar_df = pd.DataFrame(KBar_dic)
 
-                # 確保所有必要的列存在於DataFrame中
-                required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
-                for col in required_columns:
-                    if col not in KBar_df.columns:
-                        st.error(f"缺少必要的列：{col}")
-                        continue
-
                   ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
                     stock_info = twstock.codes.get(stock_id, None)
@@ -192,12 +185,9 @@ if selected_stocks:
                 st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目")
                 ShortMAPeriod = st.slider('選擇一個整數', 5, 50, short_ma_default, key=f"ShortMAPeriod_{index}")
 
-                #### 確保所有必要的列存在於DataFrame中
-                st.write("KBar_df columns:", KBar_df.columns.tolist())
-
                 #### 計算長短移動平均線
-                KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
-                KBar_df['MA_short'] = KBar_df['Close'].rolling(window=ShortMAPeriod).mean()
+                KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
+                KBar_df['MA_short'] = KBar_df['close'].rolling(window=ShortMAPeriod).mean()
 
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
@@ -212,7 +202,7 @@ if selected_stocks:
 
                 ### 計算 RSI指標長短線, 以及定義中線
                 def calculate_rsi(df, period=14):
-                    delta = df['Close'].diff()
+                    delta = df['close'].diff()
                     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
                     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
 
@@ -246,7 +236,7 @@ if selected_stocks:
                 ###### (8) 圖表 ######
                 st.subheader("圖表")
                 
-                tabs = st.tabs(["K線圖和移動平均線", "K線圖和布林通道圖", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表", "多股票比較圖表", "自動交易建議"])
+                tabs = st.tabs(["K線圖和移動平均線", "K線圖和布林通道圖", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表"])
 
                 ##### K線圖和移動平均線
                 with tabs[0]:
@@ -330,72 +320,6 @@ if selected_stocks:
 
                     st.plotly_chart(fig3, use_container_width=True)
 
-                ##### 多股票比較圖表 #####
-                with tabs[5]:
-                    st.subheader("多股票比較圖表")
-                    compare_stocks = st.multiselect("選擇要比較的股票", list(stock_dict.keys()), default=selected_stocks)
-                    if compare_stocks:
-                        fig_compare = make_subplots(specs=[[{"secondary_y": True}]])
-                        for compare_stock in compare_stocks:
-                            if compare_stock in stock_dict:
-                                file_path, stock_id = stock_dict[compare_stock]
-                                df_compare = load_excel_data(file_path)
-                                df_compare = df_compare[(df_compare['time'] >= start_date) & (df_compare['time'] <= end_date)]
-                                df_compare = df_compare.resample(resample_period, on='time').agg({
-                                    'open': 'first',
-                                    'high': 'max',
-                                    'low': 'min',
-                                    'close': 'last',
-                                    'volume': 'sum',
-                                    'amount': 'sum'
-                                }).dropna().reset_index()
-
-                                fig_compare.add_trace(go.Scatter(x=df_compare['time'], y=df_compare['close'], mode='lines', name=compare_stock))
-                        st.plotly_chart(fig_compare, use_container_width=True)
-
-                ##### 自動交易建議 #####
-                with tabs[6]:
-                    st.subheader("自動交易建議")
-                    for stock_name in selected_stocks:
-                        if stock_name in stock_dict:
-                            file_path, stock_id = stock_dict[stock_name]
-                            df = load_excel_data(file_path)
-                            df = df[(df['time'] >= start_date) & (df['time'] <= end_date)]
-                            df = df.resample(resample_period, on='time').agg({
-                                'open': 'first',
-                                'high': 'max',
-                                'low': 'min',
-                                'close': 'last',
-                                'volume': 'sum',
-                                'amount': 'sum'
-                            }).dropna().reset_index()
-
-                            # 確保所有必要的列存在於DataFrame中
-                            for col in required_columns:
-                                if col not in df.columns:
-                                    st.error(f"缺少必要的列：{col}")
-                                    continue
-
-                            # 計算技術指標
-                            df['MA_long'] = df['Close'].rolling(window=LongMAPeriod).mean()
-                            df['MA_short'] = df['Close'].rolling(window=ShortMAPeriod).mean()
-                            df['RSI'] = calculate_rsi(df, LongRSIPeriod)
-
-                            # 簡單交易策略
-                            buy_signals = []
-                            sell_signals = []
-                            position = None
-                            for i in range(len(df)):
-                                if df['MA_short'][i] > df['MA_long'][i] and (position is None or position == 'sell'):
-                                    buy_signals.append(df['time'][i])
-                                    position = 'buy'
-                                elif df['MA_short'][i] < df['MA_long'][i] and (position is None or position == 'buy'):
-                                    sell_signals.append(df['time'][i])
-                                    position = 'sell'
-
-                            st.write(f"{stock_name} 自動交易建議：")
-                            st.write(f"買入信號: {buy_signals}")
-                            st.write(f"賣出信號: {sell_signals}")
 
             except FileNotFoundError as e:
                 st.error(f"Error: {e}")
@@ -418,3 +342,4 @@ if stat_option and selected_stat_stocks:
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
+還有特別或其他的內容可以加入
