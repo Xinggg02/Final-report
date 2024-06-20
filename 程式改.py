@@ -164,6 +164,20 @@ if selected_stocks:
 
                 KBar_df = pd.DataFrame(KBar_dic)
 
+                  ##### 基本信息展示 #####
+                with st.expander(f"{selected_stock} - 股票基本信息"):
+                    stock_info = twstock.codes.get(stock_id, None)
+                    if stock_info:
+                        st.write(f"公司名稱: {stock_info.name}")
+                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
+                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
+                        st.write(f"CFI: {getattr(stock_info, 'CFI', 'N/A')}")
+                        st.write(f"ISIN: {getattr(stock_info, 'ISIN', 'N/A')}")
+                        st.write(f"code: {getattr(stock_info, 'code', 'N/A')}")
+
+                    else:
+                        st.write("找不到該股票的詳細信息。")
+
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
                 st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目")
@@ -306,22 +320,6 @@ if selected_stocks:
 
                     st.plotly_chart(fig3, use_container_width=True)
 
-                ##### 基本信息展示 #####
-                with st.expander(f"{selected_stock} - 股票基本信息"):
-                    stock_info = twstock.codes.get(stock_id, None)
-                    if stock_info:
-                        st.write(f"公司名稱: {stock_info.name}")
-                        st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
-                        st.write(f"產業別: {getattr(stock_info, 'category', 'N/A')}")
-                        st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
-                        st.write(f"資本額: {getattr(stock_info, 'capital', 'N/A')}")
-                        st.write(f"CFI: {getattr(stock_info, 'CFI', 'N/A')}")
-                        st.write(f"ISIN: {getattr(stock_info, 'ISIN', 'N/A')}")
-                        st.write(f"code: {getattr(stock_info, 'code', 'N/A')}")
-                        st.write(f"group: {getattr(stock_info, 'group', 'N/A')}")
-                        st.write(f"type: {getattr(stock_info, 'type', 'N/A')}")
-                    else:
-                        st.write("找不到該股票的詳細信息。")
 
             except FileNotFoundError as e:
                 st.error(f"Error: {e}")
