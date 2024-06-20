@@ -3,8 +3,6 @@ import numpy as np
 import datetime
 import pandas as pd
 import streamlit as st
-import indicator_f_Lo2_short
-import indicator_forKBar_short
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import twstock
@@ -46,6 +44,53 @@ def load_excel_data(file_path):
     df = df.drop('Unnamed: 0', axis=1)
     df['time'] = pd.to_datetime(df['time'])
     return df
+
+def detect_cross_signals(df, short_window, long_window):
+    signals = pd.DataFrame(index=df.index)
+    signals['signal'] = 0.0
+
+    signals['short_mavg'] = df['close'].rolling(window=short_window, min_periods=1, center=False).mean()
+    signals['long_mavg'] = df['close'].rolling(window=long_window, min_periods=1, center=False).mean()
+
+    # Create signals
+    signals['signal'][short_window:] = np.where(signals['short_mavg'][short_window:] > signals['long_mavg'][short_window:], 1.0, 0.0)
+    
+    # Generate trading orders
+    signals['positions'] = signals['signal'].diff()
+
+    return signals
+
+def calculate_rsi(df, period=14):
+    delta = df['close'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def detect_bollinger_bands(df, period=20):
+    df['MA'] = df['close'].rolling(window=period).mean()
+    df['BB_upper'] = df['MA'] + 2 * df['close'].rolling(window=period).std()
+    df['BB_lower'] = df['MA'] - 2 * df['close'].rolling(window=period).std()
+
+    signals = pd.DataFrame(index=df.index)
+    signals['signal'] = 0.0
+
+    signals['signal'] = np.where(df['close'] > df['BB_upper'], -1.0, np.where(df['close'] < df['BB_lower'], 1.0, 0.0))
+    signals['positions'] = signals['signal'].diff()
+
+    return signals
+
+def detect_rsi_signals(df, period=14, overbought=70, oversold=30):
+    signals = pd.DataFrame(index=df.index)
+    signals['RSI'] = calculate_rsi(df, period)
+
+    signals['signal'] = 0.0
+    signals['signal'] = np.where(signals['RSI'] > overbought, -1.0, np.where(signals['RSI'] < oversold, 1.0, 0.0))
+    signals['positions'] = signals['signal'].diff()
+
+    return signals
 
 if selected_stocks:
     for index, selected_stock in enumerate(selected_stocks):
@@ -192,6 +237,11 @@ if selected_stocks:
                 #### 尋找最後 NAN值的位置
                 last_nan_index_MA = KBar_df['MA_long'][::-1].index[KBar_df['MA_long'][::-1].apply(pd.isna)][0]
 
+                #### 檢測交易信號
+                ma_signals = detect_cross_signals(KBar_df, ShortMAPeriod, LongMAPeriod)
+                KBar_df['MA_Signal'] = ma_signals['signal']
+                KBar_df['MA_Positions'] = ma_signals['positions']
+
                 #####  (ii) RSI 策略   #####
                 #### 順勢策略
                 ### 設定長短 RSI 的 K棒 長度:
@@ -201,21 +251,16 @@ if selected_stocks:
                 ShortRSIPeriod = st.slider('選擇一個整數', 5, 14, short_rsi_default, key=f"ShortRSIPeriod_{index}")
 
                 ### 計算 RSI指標長短線, 以及定義中線
-                def calculate_rsi(df, period=14):
-                    delta = df['close'].diff()
-                    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-                    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-
-                    rs = gain / loss
-                    rsi = 100 - (100 / (1 + rs))
-                    return rsi
-
                 KBar_df['RSI_long'] = calculate_rsi(KBar_df, LongRSIPeriod)
                 KBar_df['RSI_short'] = calculate_rsi(KBar_df, ShortRSIPeriod)
                 KBar_df['RSI_Middle'] = np.array([50] * len(KBar_dic['time']))
 
                 ### 尋找最後 NAN值的位置
                 last_nan_index_RSI = KBar_df['RSI_long'][::-1].index[KBar_df['RSI_long'][::-1].apply(pd.isna)][0]
+
+                rsi_signals = detect_rsi_signals(KBar_df, LongRSIPeriod)
+                KBar_df['RSI_Signal'] = rsi_signals['signal']
+                KBar_df['RSI_Positions'] = rsi_signals['positions']
 
                 ###### (5) 將 Dataframe 欄位名稱轉換  ######
                 KBar_df.columns = [i[0].upper() + i[1:] for i in KBar_df.columns]
@@ -226,6 +271,10 @@ if selected_stocks:
                 KBar_df['MA'] = KBar_df['Close'].rolling(window=BBPeriod).mean()
                 KBar_df['BB_upper'] = KBar_df['MA'] + 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
                 KBar_df['BB_lower'] = KBar_df['MA'] - 2 * KBar_df['Close'].rolling(window=BBPeriod).std()
+
+                bb_signals = detect_bollinger_bands(KBar_df, BBPeriod)
+                KBar_df['BB_Signal'] = bb_signals['signal']
+                KBar_df['BB_Positions'] = bb_signals['positions']
 
                 ###### (7) 增加唐奇安通道 ######
                 st.subheader(f"{selected_stock} - 設定計算唐奇安通道(Donchian Channels)的 K 棒數目")
@@ -253,6 +302,12 @@ if selected_stocks:
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_long'][last_nan_index_MA+1:], mode='lines', line=dict(color='orange', width=2), name=f'{LongMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
                     fig1.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['MA_short'][last_nan_index_MA+1:], mode='lines', line=dict(color='pink', width=2), name=f'{ShortMAPeriod}-根 K棒 移動平均線'), secondary_y=True)
 
+                    # 添加交易信號
+                    ma_buy_signals = KBar_df[KBar_df['MA_Positions'] == 1]
+                    ma_sell_signals = KBar_df[KBar_df['MA_Positions'] == -1]
+                    fig1.add_trace(go.Scatter(x=ma_buy_signals['Time'], y=ma_buy_signals['Close'], mode='markers', marker=dict(symbol='triangle-up', color='green', size=10), name='MA買入信號'))
+                    fig1.add_trace(go.Scatter(x=ma_sell_signals['Time'], y=ma_sell_signals['Close'], mode='markers', marker=dict(symbol='triangle-down', color='red', size=10), name='MA賣出信號'))
+
                     fig1.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig1, use_container_width=True)
 
@@ -268,6 +323,11 @@ if selected_stocks:
 
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_upper'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道上軌'), secondary_y=True)
                     fig2.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_MA+1:], y=KBar_df['BB_lower'][last_nan_index_MA+1:], mode='lines', line=dict(color='blue', width=2), name='布林通道下軌'), secondary_y=True)
+
+                    bb_buy_signals = KBar_df[KBar_df['BB_Positions'] == 1]
+                    bb_sell_signals = KBar_df[KBar_df['BB_Positions'] == -1]
+                    fig2.add_trace(go.Scatter(x=bb_buy_signals['Time'], y=bb_buy_signals['Close'], mode='markers', marker=dict(symbol='triangle-up', color='green', size=10), name='BB買入信號'))
+                    fig2.add_trace(go.Scatter(x=bb_sell_signals['Time'], y=bb_sell_signals['Close'], mode='markers', marker=dict(symbol='triangle-down', color='red', size=10), name='BB賣出信號'))
 
                     fig2.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig2, use_container_width=True)
@@ -296,6 +356,11 @@ if selected_stocks:
 
                     fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_long'][last_nan_index_RSI+1:], mode='lines', line=dict(color='red', width=2), name=f'{LongRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
                     fig3.add_trace(go.Scatter(x=KBar_df['Time'][last_nan_index_RSI+1:], y=KBar_df['RSI_short'][last_nan_index_RSI+1:], mode='lines', line=dict(color='blue', width=2), name=f'{ShortRSIPeriod}-根 K棒 移動 RSI'), secondary_y=True)
+
+                    rsi_buy_signals = KBar_df[KBar_df['RSI_Positions'] == 1]
+                    rsi_sell_signals = KBar_df[KBar_df['RSI_Positions'] == -1]
+                    fig3.add_trace(go.Scatter(x=rsi_buy_signals['Time'], y=rsi_buy_signals['Close'], mode='markers', marker=dict(symbol='triangle-up', color='green', size=10), name='RSI買入信號'))
+                    fig3.add_trace(go.Scatter(x=rsi_sell_signals['Time'], y=rsi_sell_signals['Close'], mode='markers', marker=dict(symbol='triangle-down', color='red', size=10), name='RSI賣出信號'))
 
                     fig3.layout.yaxis2.showgrid = True
                     st.plotly_chart(fig3, use_container_width=True)
@@ -342,4 +407,3 @@ if stat_option and selected_stat_stocks:
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
-
