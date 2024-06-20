@@ -9,16 +9,14 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C; animation: slide-in 1s ease-out;">
+<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C; animation: fadeIn 1.5s ease-in;">
     <style>
-        @keyframes slide-in {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateX(-100%);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
             }
         }
         .glow {
@@ -31,10 +29,29 @@ html_temp = """
             width: 50px;
             height: 50px;
             margin: 0 15px;
-            transition: transform 0.3s;
+            transition: transform 0.3s, filter 0.3s;
         }
         .icon:hover {
             transform: scale(1.2);
+            filter: brightness(1.2);
+        }
+        .subtext {
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 28px;
+            font-family: 'Arial', Helvetica, sans-serif;
+            text-shadow: 1px 1px 2px #000000;
+            animation: fadeInUp 2s ease-in;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
     <div style="display: flex; align-items: center; justify-content: center;">
@@ -42,7 +59,7 @@ html_temp = """
         <h1 class="glow">金融大數據期末APP-股票資料呈現</h1>
         <img src="https://img.icons8.com/doodle/48/000000/stock-market.png" class="icon">
     </div>
-    <h2 style="color: #FFFFFF; text-align: center; font-size: 28px; font-family: 'Arial', Helvetica, sans-serif; text-shadow: 1px 1px 2px #000000;">Final-report</h2>
+    <h2 class="subtext">Final-report</h2>
 </div>
 """
 st.markdown(html_temp, unsafe_allow_html=True)
