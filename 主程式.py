@@ -9,9 +9,9 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background-color:#4CAF50;padding:15px;border-radius:15px">
-    <h1 style="color:#FFFFFF;text-align:center;font-size:36px;">金融大數據期末APP-股票資料呈現</h1>
-    <h2 style="color:#FFFFFF;text-align:center;font-size:28px;">Final-report</h2>
+<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 15px; border-radius: 15px; box-shadow: 0px 4px 8px rgba(0,0,0,0.2);">
+    <h1 style="color:#FFFFFF; text-align:center; font-size:36px; font-family: 'Arial Black', Gadget, sans-serif; text-shadow: 2px 2px 4px #000000;">金融大數據期末APP-股票資料呈現</h1>
+    <h2 style="color:#FFFFFF; text-align:center; font-size:28px; font-family: 'Arial', Helvetica, sans-serif; text-shadow: 1px 1px 2px #000000;">Final-report</h2>
 </div>
 """
 st.markdown(html_temp, unsafe_allow_html=True)
