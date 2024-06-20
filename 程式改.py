@@ -92,6 +92,28 @@ def detect_rsi_signals(df, period=14, overbought=70, oversold=30):
 
     return signals
 
+# 自定义KBar类
+class KBar:
+    def __init__(self, start_date, cycle_duration):
+        self.start_date = start_date
+        self.cycle_duration = cycle_duration
+        self.TAKBar = {
+            'time': [],
+            'open': [],
+            'high': [],
+            'low': [],
+            'close': [],
+            'volume': [],
+        }
+    
+    def AddPrice(self, time, open_price, close_price, low_price, high_price, volume):
+        self.TAKBar['time'].append(time)
+        self.TAKBar['open'].append(open_price)
+        self.TAKBar['high'].append(high_price)
+        self.TAKBar['low'].append(low_price)
+        self.TAKBar['close'].append(close_price)
+        self.TAKBar['volume'].append(volume)
+
 if selected_stocks:
     for index, selected_stock in enumerate(selected_stocks):
         if selected_stock in stock_dict:
@@ -178,7 +200,7 @@ if selected_stocks:
 
                 cycle_duration = int(cycle_duration)
 
-                KBar = indicator_forKBar_short.KBar(Date, cycle_duration)  # 設定 cycle_duration 可以改成你想要的 KBar 週期
+                KBar = KBar(Date, cycle_duration)  # 使用自定义KBar类
 
                 for i in range(KBar_dic['time'].size):
                     time = KBar_dic['time'][i]
