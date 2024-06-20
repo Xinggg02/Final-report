@@ -55,7 +55,7 @@ if selected_stocks:
                 df_original = load_excel_data(file_path)
                 
                 ##### 選擇資料區間 #####
-                with st.expander(f"{selected_stock} - 選擇開始與結束的日期, 卻間:2019-01-01 至 2024-05-31"):
+                with st.expander(f"{selected_stock} - 選擇開始與結束的日期, 區間:2019-01-01 至 2024-05-31"):
                     start_date = st.date_input(f'選擇開始日期', datetime.date(2019, 1, 1), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"start_date_{index}")
                     end_date = st.date_input(f'選擇結束日期', datetime.date(2024, 5, 31), min_value=datetime.date(2019, 1, 1), max_value=datetime.date(2024, 5, 31), key=f"end_date_{index}")
                 start_date = datetime.datetime.combine(start_date, datetime.time.min)
@@ -191,6 +191,9 @@ if selected_stocks:
                 LongMAPeriod = st.slider('選擇一個整數', 10, 200, long_ma_default, key=f"LongMAPeriod_{index}")
                 st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目")
                 ShortMAPeriod = st.slider('選擇一個整數', 5, 50, short_ma_default, key=f"ShortMAPeriod_{index}")
+
+                #### 確保所有必要的列存在於DataFrame中
+                st.write("KBar_df columns:", KBar_df.columns.tolist())
 
                 #### 計算長短移動平均線
                 KBar_df['MA_long'] = KBar_df['Close'].rolling(window=LongMAPeriod).mean()
