@@ -312,7 +312,9 @@ if selected_stocks:
                     if stock_info:
                         st.write(f"公司名稱: {stock_info.name}")
                         st.write(f"市場: {getattr(stock_info, 'market', 'N/A')}")
+                        st.write(f"產業別: {getattr(stock_info, 'category', 'N/A')}")
                         st.write(f"上市日期: {getattr(stock_info, 'start', 'N/A')}")
+                        st.write(f"資本額: {getattr(stock_info, 'capital', 'N/A')}")
                     else:
                         st.write("找不到該股票的詳細信息。")
 
