@@ -164,7 +164,7 @@ if selected_stocks:
 
                 KBar_df = pd.DataFrame(KBar_dic)
 
-                  ##### 基本信息展示 #####
+                ##### 基本信息展示 #####
                 with st.expander(f"{selected_stock} - 股票基本信息"):
                     stock_info = twstock.codes.get(stock_id, None)
                     if stock_info:
@@ -342,3 +342,4 @@ if stat_option and selected_stat_stocks:
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")
+
