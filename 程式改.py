@@ -174,7 +174,7 @@ if selected_stocks:
                 KBar_open_list = np.array(list(KBar_dic['open'].values()))
                 KBar_dic['open'] = KBar_open_list
 
-                KBar_dic['product'] = np.repeat(selected_stock, KBar_dic['open'].size)
+                KBar_dic['product'] = np.repeat(selected_stock, len(KBar_dic['time']))
 
                 KBar_time_list = [i.to_pydatetime() for i in KBar_dic['time'].values()]
                 KBar_dic['time'] = np.array(KBar_time_list)
@@ -202,7 +202,7 @@ if selected_stocks:
 
                 KBar = KBar(Date, cycle_duration)  # 使用自定义KBar类
 
-                for i in range(KBar_dic['time'].size):
+                for i in range(len(KBar_dic['time'])):
                     time = KBar_dic['time'][i]
                     open_price = KBar_dic['open'][i]
                     close_price = KBar_dic['close'][i]
@@ -222,7 +222,7 @@ if selected_stocks:
 
                 # 形成 KBar 字典 (新週期的):
                 KBar_dic['time'] = KBar.TAKBar['time']
-                KBar_dic['product'] = np.repeat(selected_stock, KBar_dic['time'].size)
+                KBar_dic['product'] = np.repeat(selected_stock, len(KBar.TAKBar['time']))
                 KBar_dic['open'] = KBar.TAKBar['open']
                 KBar_dic['high'] = KBar.TAKBar['high']
                 KBar_dic['low'] = KBar.TAKBar['low']
