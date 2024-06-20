@@ -13,7 +13,7 @@ html_temp = """
     <div style="display: flex; align-items: center; justify-content: center;">
         <img src="https://img.icons8.com/doodle/48/000000/bank.png" style="width: 50px; height: 50px; margin-right: 15px;">
         <h1 style="color: #FFFFFF; text-align: center; font-size: 36px; font-family: 'Arial Black', Gadget, sans-serif; text-shadow: 2px 2px 4px #000000;">金融大數據期末APP-股票資料呈現</h1>
-        <img src="https://img.icons8.com/doodle/48/000000/stock-market.png" style="width: 50px; height: 50px; margin-left: 15px;">
+        <img src="https://img.icons8.com/doodle/48/000000/finance.png" style="width: 50px; height: 50px; margin-left: 15px;">
     </div>
     <h2 style="color: #FFFFFF; text-align: center; font-size: 28px; font-family: 'Arial', Helvetica, sans-serif; text-shadow: 1px 1px 2px #000000;">Final-report</h2>
 </div>
