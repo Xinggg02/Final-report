@@ -9,16 +9,44 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C;">
+<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C; animation: slide-in 1s ease-out;">
+    <style>
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .glow {
+            font-family: 'Arial Black', Gadget, sans-serif;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #81C784, 0 0 25px #81C784, 0 0 30px #81C784, 0 0 35px #81C784;
+        }
+        .icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 15px;
+            transition: transform 0.3s;
+        }
+        .icon:hover {
+            transform: scale(1.2);
+        }
+    </style>
     <div style="display: flex; align-items: center; justify-content: center;">
-        <img src="https://img.icons8.com/doodle/48/000000/bank.png" style="width: 50px; height: 50px; margin-right: 15px;">
-        <h1 style="color: #FFFFFF; text-align: center; font-size: 36px; font-family: 'Arial Black', Gadget, sans-serif; text-shadow: 2px 2px 4px #000000;">金融大數據期末APP-股票資料呈現</h1>
-        <img src="https://img.icons8.com/fluency/48/total-sales-1.png" style="width: 50px; height: 50px; margin-left: 15px;">
+        <img src="https://img.icons8.com/doodle/48/000000/bank.png" class="icon">
+        <h1 class="glow">金融大數據期末APP-股票資料呈現</h1>
+        <img src="https://img.icons8.com/doodle/48/000000/stock-market.png" class="icon">
     </div>
     <h2 style="color: #FFFFFF; text-align: center; font-size: 28px; font-family: 'Arial', Helvetica, sans-serif; text-shadow: 1px 1px 2px #000000;">Final-report</h2>
 </div>
 """
 st.markdown(html_temp, unsafe_allow_html=True)
+
 
 
 # 定義一個函數來取得股票代碼和名稱
