@@ -20,6 +20,7 @@ html_temp = """
 """
 st.markdown(html_temp, unsafe_allow_html=True)
 
+
 # 定義一個函數來取得股票代碼和名稱
 @st.cache_data
 def load_stock_data(stock_ids):
