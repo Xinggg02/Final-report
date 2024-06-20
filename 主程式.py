@@ -9,7 +9,7 @@ import twstock
 
 ###### (1) 開始設定 ######
 html_temp = """
-<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C; animation: fadeIn 1.5s ease-in;">
+<div style="background: linear-gradient(to right, #4CAF50, #81C784); padding: 20px; border-radius: 15px; box-shadow: 0px 4px 12px rgba(0,0,0,0.2); border: 2px solid #388E3C; animation: fadeIn 3s ease-in;">
     <style>
         @keyframes fadeIn {
             from {
@@ -19,11 +19,10 @@ html_temp = """
                 opacity: 1;
             }
         }
-        .glow {
+        .title {
             font-family: 'Arial Black', Gadget, sans-serif;
             color: #fff;
             text-align: center;
-            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #81C784, 0 0 25px #81C784, 0 0 30px #81C784, 0 0 35px #81C784;
         }
         .icon {
             width: 50px;
@@ -40,8 +39,7 @@ html_temp = """
             text-align: center;
             font-size: 28px;
             font-family: 'Arial', Helvetica, sans-serif;
-            text-shadow: 1px 1px 2px #000000;
-            animation: fadeInUp 2s ease-in;
+            animation: fadeInUp 3s ease-in;
         }
         @keyframes fadeInUp {
             from {
@@ -56,8 +54,8 @@ html_temp = """
     </style>
     <div style="display: flex; align-items: center; justify-content: center;">
         <img src="https://img.icons8.com/doodle/48/000000/bank.png" class="icon">
-        <h1 class="glow">金融大數據期末APP-股票資料呈現</h1>
-        <img src="https://img.icons8.com/doodle/48/000000/stock-market.png" class="icon">
+        <h1 class="title">金融大數據期末APP-股票資料呈現</h1>
+        <img src="https://img.icons8.com/fluency/48/total-sales-1.png" class="icon">
     </div>
     <h2 class="subtext">Final-report</h2>
 </div>
