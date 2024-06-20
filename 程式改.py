@@ -149,10 +149,10 @@ if selected_stocks:
 
                 #####  (i) 移動平均線策略   #####
                 ####  設定長短移動平均線的 K棒 長度:
-                st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 10)")
-                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 10, key=f"LongMAPeriod_{index}")
-                st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目(整數, 例如 2)")
-                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 2, key=f"ShortMAPeriod_{index}")
+                st.subheader(f"{selected_stock} - 設定計算長移動平均線(MA)的 K 棒數目(整數, 例如 50)")
+                LongMAPeriod = st.slider('選擇一個整數', 0, 100, 50, key=f"LongMAPeriod_{index}")
+                st.subheader(f"{selected_stock} - 設定計算短移動平均線(MA)的 K 棒數目(整數, 例如 20)")
+                ShortMAPeriod = st.slider('選擇一個整數', 0, 100, 20, key=f"ShortMAPeriod_{index}")
 
                 #### 計算長短移動平均線
                 KBar_df['MA_long'] = KBar_df['close'].rolling(window=LongMAPeriod).mean()
@@ -164,10 +164,10 @@ if selected_stocks:
                 #####  (ii) RSI 策略   #####
                 #### 順勢策略
                 ### 設定長短 RSI 的 K棒 長度:
-                st.subheader(f"{selected_stock} - 設定計算長RSI的 K 棒數目(整數, 例如 10)")
-                LongRSIPeriod = st.slider('選擇一個整數', 0, 1000, 10, key=f"LongRSIPeriod_{index}")
-                st.subheader(f"{selected_stock} - 設定計算短RSI的 K 棒數目(整數, 例如 2)")
-                ShortRSIPeriod = st.slider('選擇一個整數', 0, 1000, 2, key=f"ShortRSIPeriod_{index}")
+                st.subheader(f"{selected_stock} - 設定計算長RSI的 K 棒數目(整數, 例如 14)")
+                LongRSIPeriod = st.slider('選擇一個整數', 0, 100, 14, key=f"LongRSIPeriod_{index}")
+                st.subheader(f"{selected_stock} - 設定計算短RSI的 K 棒數目(整數, 例如 7)")
+                ShortRSIPeriod = st.slider('選擇一個整數', 0, 100, 7, key=f"ShortRSIPeriod_{index}")
 
                 ### 計算 RSI指標長短線, 以及定義中線
                 def calculate_rsi(df, period=14):
