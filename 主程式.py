@@ -37,7 +37,7 @@ stock_dict = load_stock_data(stock_ids)
 
 # 生成股票選擇列表
 st.subheader(f"選擇股票")
-selected_stocks = st.multiselect("選擇股票", list(stock_dict.keys()), default=[list(stock_dict.keys())[0]])
+selected_stocks = st.multiselect("", list(stock_dict.keys()), default=[list(stock_dict.keys())[0]])
 
 @st.cache_data
 def load_excel_data(file_path):
