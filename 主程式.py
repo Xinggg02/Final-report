@@ -63,8 +63,6 @@ html_temp = """
 """
 st.markdown(html_temp, unsafe_allow_html=True)
 
-
-
 # 定義一個函數來取得股票代碼和名稱
 @st.cache_data
 def load_stock_data(stock_ids):
@@ -128,6 +126,17 @@ def detect_rsi_signals(df, period=14, overbought=70, oversold=30):
     signals['positions'] = signals['signal'].diff()
 
     return signals
+
+def calculate_kdj(df, period=9):
+    low_min = df['low'].rolling(window=period, min_periods=1).min()
+    high_max = df['high'].rolling(window=period, min_periods=1).max()
+    rsv = (df['close'] - low_min) / (high_max - low_min) * 100
+
+    df['K'] = rsv.ewm(com=2).mean()
+    df['D'] = df['K'].ewm(com=2).mean()
+    df['J'] = 3 * df['K'] - 2 * df['D']
+
+    return df
 
 # 自定义KBar类
 class KBar:
@@ -330,10 +339,15 @@ if selected_stocks:
                 KBar_df['DC_upper'] = KBar_df['High'].rolling(window=DCPPeriod).max()
                 KBar_df['DC_lower'] = KBar_df['Low'].rolling(window=DCPPeriod).min()
 
+                ###### 增加KDJ指標 ######
+                st.subheader(f"{selected_stock} - 設定計算KDJ指標的 K 棒數目")
+                KDJPeriod = st.slider('選擇一個整數', 5, 30, 9, key=f"KDJPeriod_{index}")
+                KBar_df = calculate_kdj(KBar_df, KDJPeriod)
+
                 ###### (8) 圖表 ######
                 st.subheader("圖表")
                 
-                tabs = st.tabs(["K線圖和移動平均線", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表"])
+                tabs = st.tabs(["K線圖和移動平均線", "K線圖和唐奇安通道", "長短 RSI", "MACD 圖表", "KDJ 圖表"])
 
                 ##### K線圖和移動平均線
                 with tabs[0]:
@@ -411,6 +425,17 @@ if selected_stocks:
                     fig3.add_trace(go.Bar(x=KBar_df['Time'], y=KBar_df['MACD_hist'], name='MACD 柱狀圖', marker_color='green'), row=2, col=1)
 
                     st.plotly_chart(fig3, use_container_width=True)
+
+                ##### 增加KDJ圖表 #####
+                with tabs[4]:
+                    fig_kdj = make_subplots(specs=[[{"secondary_y": True}]])
+
+                    fig_kdj.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['K'], mode='lines', line=dict(color='blue', width=2), name='K'), secondary_y=True)
+                    fig_kdj.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['D'], mode='lines', line=dict(color='orange', width=2), name='D'), secondary_y=True)
+                    fig_kdj.add_trace(go.Scatter(x=KBar_df['Time'], y=KBar_df['J'], mode='lines', line=dict(color='green', width=2), name='J'), secondary_y=True)
+
+                    fig_kdj.layout.yaxis2.showgrid = True
+                    st.plotly_chart(fig_kdj, use_container_width=True)
 
 
             except FileNotFoundError as e:
