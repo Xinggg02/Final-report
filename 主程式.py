@@ -433,4 +433,4 @@ if stat_option and selected_stat_stocks:
                 st.write(f"{stock_name} (代碼: {stock_id}) 總成交量: {total_volume}")
             elif stat_option == "總成交額":
                 total_amount = df['amount'].sum()
-                st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")    加入kdj
+                st.write(f"{stock_name} (代碼: {stock_id}) 總成交額: {total_amount}")   
